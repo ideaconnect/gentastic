@@ -22,14 +22,22 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
     private readonly SemaphoreSlim _gate = new(1, 1);
     private DiffusionModel? _model;
 
-    public StableDiffusionEngine(ILogger<StableDiffusionEngine> logger)
+    public StableDiffusionEngine(ILogger<StableDiffusionEngine> logger, IRuntimeDetector detector)
     {
         _logger = logger;
 
+        // StableDiffusion.NET loads its native library once, lazily, on the FIRST native call and
+        // caches it for the whole process. The backend must therefore be enabled before that first
+        // call — otherwise only the default CPU backend is active and generation silently runs on the
+        // CPU. Select it here, immediately before InitializeEvents (the first native call).
+        Backend = detector.Detect().RecommendedBackend;
+
         if (Interlocked.Exchange(ref _eventsInitialized, 1) == 0)
         {
+            SelectBackend(Backend);
             StableDiffusionCpp.InitializeEvents();
             StableDiffusionCpp.Log += (_, a) => _logger.LogDebug("sd.cpp [{Level}] {Text}", a.Level, a.Text);
+            _logger.LogInformation("sd.cpp backend enabled: {Backend}.", Backend);
         }
     }
 
@@ -48,8 +56,11 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            SelectBackend(hardware.RecommendedBackend);
-            Backend = hardware.RecommendedBackend;
+            if (hardware.RecommendedBackend != Backend)
+                _logger.LogWarning(
+                    "Requested backend {Requested} but the engine is locked to {Actual} — the native "
+                    + "backend is chosen once per process (restart to switch).",
+                    hardware.RecommendedBackend, Backend);
 
             _model?.Dispose();
             _model = null;
@@ -143,11 +154,13 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
         return parameter;
     }
 
-    /// <summary>Enable exactly the requested backend so generation runs where we intend (no silent
-    /// CPU fallback masking a broken GPU path). Multi-GPU device selection is tracked separately.</summary>
+    /// <summary>Enable the requested accelerator before the native library is loaded. CPU stays
+    /// enabled as a safety net; the accelerator's higher <see cref="IBackend.Priority"/> makes the
+    /// loader prefer it when its DLL is present, and falls back to CPU otherwise (no startup crash).
+    /// Multi-GPU device selection is tracked separately.</summary>
     private static void SelectBackend(GenerationBackend backend)
     {
-        Backends.CpuBackend.IsEnabled = backend == GenerationBackend.Cpu;
+        Backends.CpuBackend.IsEnabled = true;
         Backends.VulkanBackend.IsEnabled = backend == GenerationBackend.Vulkan;
         Backends.CudaBackend.IsEnabled = backend == GenerationBackend.Cuda;
         Backends.RocmBackend.IsEnabled = backend == GenerationBackend.Rocm;

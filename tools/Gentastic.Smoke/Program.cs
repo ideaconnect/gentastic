@@ -38,10 +38,11 @@ if (missing.Count > 0)
 
 StableDiffusion.NET.StableDiffusionCpp.Log += (_, a) => Console.WriteLine($"[sd:{a.Level}] {a.Text}");
 
-var hardware = new RuntimeDetector(NullLogger<RuntimeDetector>.Instance).Detect();
+var detector = new RuntimeDetector(NullLogger<RuntimeDetector>.Instance);
+var hardware = detector.Detect();
 Console.WriteLine($"Runtime: {hardware.Summary}");
 
-await using var engine = new StableDiffusionEngine(NullLogger<StableDiffusionEngine>.Instance);
+await using var engine = new StableDiffusionEngine(NullLogger<StableDiffusionEngine>.Instance, detector);
 
 var sw = Stopwatch.StartNew();
 await engine.LoadModelAsync(new ModelInstallation(spec, files), hardware);
