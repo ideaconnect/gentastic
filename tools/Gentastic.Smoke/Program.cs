@@ -1,8 +1,11 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
+using Gentastic.Core.Services;
 using Gentastic.Engine;
 using Gentastic.Hardware;
 using Gentastic.Models;
@@ -42,13 +45,13 @@ var detector = new RuntimeDetector(NullLogger<RuntimeDetector>.Instance);
 var hardware = detector.Detect();
 Console.WriteLine($"Runtime: {hardware.Summary}");
 
+// Run the full pipeline through GenerationService (download -> load -> sample) — the same path the
+// app uses (GitHub #19). The model is already cached, so EnsureInstalled resolves without downloading.
+var httpFactory = new SimpleHttpClientFactory();
+var repository = new HuggingFaceModelRepository(httpFactory, NullLogger<HuggingFaceModelRepository>.Instance);
 await using var engine = new StableDiffusionEngine(NullLogger<StableDiffusionEngine>.Instance, detector);
+var service = new GenerationService(repository, engine, detector, NullLogger<GenerationService>.Instance);
 
-var sw = Stopwatch.StartNew();
-await engine.LoadModelAsync(new ModelInstallation(spec, files), hardware);
-Console.WriteLine($"Loaded {spec.DisplayName} in {sw.Elapsed.TotalSeconds:F1}s on {engine.Backend}. Generating…");
-
-sw.Restart();
 var request = new TextToImageRequest
 {
     Prompt = "a single red apple on a wooden table, studio photo, sharp focus, soft light",
@@ -59,11 +62,13 @@ var request = new TextToImageRequest
     Cfg = 1.0f,
     Sampler = Sampler.Euler,
 };
-var image = await engine.TextToImageAsync(
-    request, new Progress<GenerationProgress>(p => Console.WriteLine($"  step {p.Step}/{p.TotalSteps}")));
+
+var sw = Stopwatch.StartNew();
+var image = await service.RunAsync(
+    request, spec, new Progress<GenerationStatus>(s => Console.WriteLine($"  [{s.Stage}] {s.Message}")));
 
 var distinct = image.Pixels.Distinct().Count();
-Console.WriteLine($"Generated {image.Width}x{image.Height} in {sw.Elapsed.TotalSeconds:F1}s "
+Console.WriteLine($"Generated {image.Width}x{image.Height} in {sw.Elapsed.TotalSeconds:F1}s on {engine.Backend} "
                 + $"({image.Pixels.Length} bytes, {distinct} distinct values).");
 
 SavePng(image, outputPath);
@@ -103,4 +108,9 @@ static void SavePng(RenderedImage image, string path)
         ("model", "flux1-schnell"),
     ]);
     File.WriteAllBytes(path, png);
+}
+
+sealed class SimpleHttpClientFactory : IHttpClientFactory
+{
+    public HttpClient CreateClient(string name) => new();
 }
