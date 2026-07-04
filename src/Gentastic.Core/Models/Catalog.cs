@@ -14,9 +14,11 @@ public enum Quantization
     F16,
     Q8_0,
     Q6_K,
-    Q5_K_M,
-    Q4_K_M,
+    Q5_K_S,
+    Q4_K_S,
     Q4_0,
+    Q3_K_S,
+    Q2_K,
 }
 
 /// <summary>Which part of a diffusion model a file provides.</summary>
