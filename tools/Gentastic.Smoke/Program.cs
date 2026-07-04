@@ -92,6 +92,15 @@ static void SavePng(RenderedImage image, string path)
         image.Width, image.Height, 96, 96, PixelFormats.Bgra32, null, bgra, image.Width * 4);
     var encoder = new PngBitmapEncoder();
     encoder.Frames.Add(BitmapFrame.Create(bitmap));
-    using var stream = File.Create(path);
-    encoder.Save(stream);
+    using var ms = new MemoryStream();
+    encoder.Save(ms);
+
+    // Exercise the #21 metadata path on a real generated image.
+    var png = Gentastic.Core.Imaging.PngMetadata.AddTextChunks(ms.ToArray(),
+    [
+        ("Software", "Gentastic"),
+        ("prompt", "smoke-test: red apple on a wooden table"),
+        ("model", "flux1-schnell"),
+    ]);
+    File.WriteAllBytes(path, png);
 }

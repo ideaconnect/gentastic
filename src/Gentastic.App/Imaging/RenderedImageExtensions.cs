@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Gentastic.Core.Imaging;
 using Gentastic.Core.Models;
 
 namespace Gentastic.App.Imaging;
@@ -43,12 +44,21 @@ public static class RenderedImageExtensions
 
     public static ImageSource ToImageSource(this RenderedImage image) => image.ToBitmapSource();
 
-    /// <summary>Encodes the image as PNG. Text metadata can be attached by the caller later.</summary>
-    public static void SavePng(this RenderedImage image, string path)
+    /// <summary>Encodes the image as PNG, embedding the given key/value pairs as iTXt metadata.</summary>
+    public static void SavePng(
+        this RenderedImage image, string path,
+        IReadOnlyList<(string Keyword, string Text)>? metadata = null)
     {
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(image.ToBitmapSource()));
-        using var stream = File.Create(path);
-        encoder.Save(stream);
+
+        using var buffer = new MemoryStream();
+        encoder.Save(buffer);
+        var png = buffer.ToArray();
+
+        if (metadata is { Count: > 0 })
+            png = PngMetadata.AddTextChunks(png, metadata);
+
+        File.WriteAllBytes(path, png);
     }
 }

@@ -67,6 +67,9 @@
                            Command="{Binding GenerateCommand}" />
                 <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <ui:Button Content="Open output folder" Icon="{ui:SymbolIcon FolderOpen24}"
+                           Command="{Binding OpenOutputFolderCommand}" Margin="0,8,0,0"
+                           HorizontalAlignment="Left" />
             </StackPanel>
         </ScrollViewer>
 

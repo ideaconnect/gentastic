@@ -1,4 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -60,6 +63,7 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private ImageSource? _previewImage;
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _statusMessage = "Ready.";
+    [ObservableProperty] private string? _lastOutputPath;
 
     /// <summary>Guidance-distilled FLUX only honours a negative prompt when CFG &gt; 1.</summary>
     public string NegativePromptHint =>
@@ -111,7 +115,8 @@ public partial class GenerateViewModel : ObservableObject
             var progress = new Progress<GenerationStatus>(s => StatusMessage = s.Message);
             var image = await _generationService.RunAsync(request, SelectedModel, progress);
             PreviewImage = image.ToImageSource();
-            StatusMessage = "Done.";
+            LastOutputPath = SaveOutput(image, SelectedModel, request);
+            StatusMessage = $"Saved to {LastOutputPath}";
         }
         catch (Exception ex)
         {
@@ -134,4 +139,37 @@ public partial class GenerateViewModel : ObservableObject
         Cfg = (float)Cfg,
         Sampler = SelectedSampler,
     };
+
+    public static string OutputDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Gentastic");
+
+    private static string SaveOutput(RenderedImage image, ModelSpec model, GenerationRequest request)
+    {
+        Directory.CreateDirectory(OutputDirectory);
+        var seed = request.Seed < 0 ? "rnd" : request.Seed.ToString(CultureInfo.InvariantCulture);
+        var path = Path.Combine(OutputDirectory, $"gentastic_{DateTime.Now:yyyyMMdd_HHmmss}_{seed}.png");
+
+        var metadata = new List<(string, string)>
+        {
+            ("Software", "Gentastic"),
+            ("prompt", request.Prompt),
+            ("negative_prompt", request.NegativePrompt ?? string.Empty),
+            ("model", model.Id),
+            ("seed", request.Seed.ToString(CultureInfo.InvariantCulture)),
+            ("steps", request.Steps.ToString(CultureInfo.InvariantCulture)),
+            ("cfg", request.Cfg.ToString(CultureInfo.InvariantCulture)),
+            ("sampler", request.Sampler.ToString()),
+            ("size", $"{request.Width}x{request.Height}"),
+        };
+
+        image.SavePng(path, metadata);
+        return path;
+    }
+
+    [RelayCommand]
+    private void OpenOutputFolder()
+    {
+        Directory.CreateDirectory(OutputDirectory);
+        Process.Start(new ProcessStartInfo { FileName = OutputDirectory, UseShellExecute = true });
+    }
 }
