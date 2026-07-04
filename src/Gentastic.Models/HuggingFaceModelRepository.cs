@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
@@ -97,7 +98,13 @@ public sealed class HuggingFaceModelRepository : IModelRepository
     {
         Directory.CreateDirectory(Path.GetDirectoryName(local)!);
         var url = $"{Host}/{file.Repo}/resolve/{file.Revision}/{file.Path}";
-        _logger.LogInformation("Downloading {Url}", url);
+        var tempPath = local + ".part";
+        var fileName = Path.GetFileName(file.Path);
+
+        // Resume a prior partial download if a .part file is present.
+        var resumeFrom = File.Exists(tempPath) ? new FileInfo(tempPath).Length : 0;
+        _logger.LogInformation("Downloading {Url}{Resume}", url,
+            resumeFrom > 0 ? $" (resuming at {resumeFrom} bytes)" : string.Empty);
 
         var client = _httpFactory.CreateClient("huggingface");
         client.Timeout = Timeout.InfiniteTimeSpan; // large files stream past the default 100s
@@ -106,21 +113,28 @@ public sealed class HuggingFaceModelRepository : IModelRepository
         var token = _tokenProvider();
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (resumeFrom > 0)
+            request.Headers.Range = new RangeHeaderValue(resumeFrom, null);
 
         using var response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var total = response.Content.Headers.ContentLength;
-        var tempPath = local + ".part";
-        var fileName = Path.GetFileName(file.Path);
+        // Append only when the server honoured the range; otherwise it sent the full file, so restart.
+        var append = resumeFrom > 0 && response.StatusCode == HttpStatusCode.PartialContent;
+        if (!append)
+            resumeFrom = 0;
+
+        var total = response.Content.Headers.ContentRange?.Length
+                    ?? (response.Content.Headers.ContentLength is { } len ? resumeFrom + len : null);
 
         await using (var source = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false))
-        await using (var destination = File.Create(tempPath))
+        await using (var destination = new FileStream(
+            tempPath, append ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.None))
         {
             var buffer = new byte[1 << 20];
-            long received = 0;
+            var received = resumeFrom;
             int read;
             while ((read = await source.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
             {
@@ -130,7 +144,34 @@ public sealed class HuggingFaceModelRepository : IModelRepository
             }
         }
 
+        // Verify the download when the catalog provides an expected hash; drop the corrupt part.
+        if (!string.IsNullOrWhiteSpace(file.Sha256))
+        {
+            try
+            {
+                await Checksum.VerifyAsync(tempPath, file.Sha256, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                TryDelete(tempPath);
+                throw;
+            }
+        }
+
         File.Move(tempPath, local, overwrite: true);
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // best-effort cleanup
+        }
     }
 
     private string LocalPath(ModelFile file) =>
