@@ -65,21 +65,31 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = "Ready.";
     [ObservableProperty] private string? _lastOutputPath;
 
-    /// <summary>Guidance-distilled FLUX only honours a negative prompt when CFG &gt; 1.</summary>
+    /// <summary>Guidance-distilled FLUX only honours a negative prompt when CFG &gt; 1, so the input
+    /// is gated: disabled (with an explanatory hint) until CFG is raised above 1.</summary>
+    public bool IsNegativePromptEnabled =>
+        SelectedModel?.IsGuidanceDistilled != true || Cfg > 1.0;
+
     public string NegativePromptHint =>
-        SelectedModel?.IsGuidanceDistilled == true && Cfg <= 1.0
-            ? "Base FLUX ignores the negative prompt unless CFG > 1 (which roughly doubles time)."
-            : string.Empty;
+        IsNegativePromptEnabled
+            ? string.Empty
+            : "Base FLUX ignores the negative prompt unless CFG > 1 (which roughly doubles time).";
 
     partial void OnSelectedModelChanged(ModelSpec? value)
     {
         ApplyModelDefaults();
-        OnPropertyChanged(nameof(NegativePromptHint));
+        NotifyNegativePromptState();
     }
 
     partial void OnSelectedSizeChanged(ImageSize value) { /* width/height read on generate */ }
 
-    partial void OnCfgChanged(double value) => OnPropertyChanged(nameof(NegativePromptHint));
+    partial void OnCfgChanged(double value) => NotifyNegativePromptState();
+
+    private void NotifyNegativePromptState()
+    {
+        OnPropertyChanged(nameof(IsNegativePromptEnabled));
+        OnPropertyChanged(nameof(NegativePromptHint));
+    }
 
     private void ApplyModelDefaults()
     {

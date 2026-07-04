@@ -26,6 +26,7 @@
                 <TextBlock Text="Negative prompt" Margin="0,0,0,4" />
                 <ui:TextBox PlaceholderText="What to avoid…"
                             Text="{Binding NegativePrompt, UpdateSourceTrigger=PropertyChanged}"
+                            IsEnabled="{Binding IsNegativePromptEnabled}"
                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="52" Margin="0,0,0,2" />
                 <TextBlock Text="{Binding NegativePromptHint}" TextWrapping="Wrap"
                            FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
