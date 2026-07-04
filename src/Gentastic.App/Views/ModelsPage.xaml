@@ -1,0 +1,69 @@
+<Page x:Class="Gentastic.App.Views.ModelsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Models">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Models" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Download FLUX models from Hugging Face. Shared encoders/VAE are fetched once."
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+            <ui:Button Content="Refresh" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                       Command="{Binding RefreshCommand}" Margin="16,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Models}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:Card Margin="0,0,0,10" Padding="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="15" />
+                                    <TextBlock Text="{Binding Details}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding Status}" Margin="0,6,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                    <ProgressBar Value="{Binding Progress}" Maximum="1" Height="4" Margin="0,6,0,0"
+                                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Content="Download" Appearance="Primary"
+                                               Icon="{ui:SymbolIcon ArrowDownload24}"
+                                               Command="{Binding DataContext.DownloadCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}" />
+                                    <ui:Button Content="Delete" Margin="8,0,0,0"
+                                               Icon="{ui:SymbolIcon Delete24}"
+                                               Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Margin="0,12,0,0"
+                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+    </Grid>
+</Page>

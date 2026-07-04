@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gentastic.Core\Gentastic.Core.csproj" />
+    <ProjectReference Include="..\Gentastic.Engine\Gentastic.Engine.csproj" />
+    <ProjectReference Include="..\Gentastic.Hardware\Gentastic.Hardware.csproj" />
+    <ProjectReference Include="..\Gentastic.Models\Gentastic.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
+    <PackageReference Include="StableDiffusion.NET.Backend.Cpu" Version="7.0.0" />
+    <PackageReference Include="StableDiffusion.NET.Backend.Vulkan" Version="7.0.0" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.3.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

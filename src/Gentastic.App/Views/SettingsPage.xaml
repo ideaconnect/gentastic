@@ -1,0 +1,55 @@
+<Page x:Class="Gentastic.App.Views.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Settings">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+            <!-- Runtime -->
+            <ui:Card Padding="16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Runtime" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding HardwareSummary}" />
+                    <TextBlock Text="{Binding BackendStatus}" Margin="0,4,0,10"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="Detected adapters" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <ItemsControl ItemsSource="{Binding Adapters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Model cache -->
+            <ui:Card Padding="16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Model cache" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding CacheRoot}" TextWrapping="Wrap" />
+                    <TextBlock Margin="0,4,0,10" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="On disk: " /><Run Text="{Binding CacheSize}" />
+                    </TextBlock>
+                    <ui:Button Content="Open cache folder" Icon="{ui:SymbolIcon FolderOpen24}"
+                               Command="{Binding OpenCacheFolderCommand}" HorizontalAlignment="Left" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Hugging Face -->
+            <ui:Card Padding="16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Hugging Face" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding TokenStatus}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </ui:Card>
+
+            <ui:Button Content="Refresh" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                       Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

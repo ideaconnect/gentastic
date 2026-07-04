@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Gentastic.slnx
+
+      - name: Build
+        run: dotnet build Gentastic.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Gentastic.slnx -c Release --no-build --verbosity normal
