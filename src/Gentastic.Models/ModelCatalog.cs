@@ -16,8 +16,10 @@ public sealed class ModelCatalog : IModelCatalog
         new(ModelFileRole.TextEncoderClip, "comfyanonymous/flux_text_encoders", "clip_l.safetensors");
     private static readonly ModelFile T5Xxl =
         new(ModelFileRole.TextEncoderT5, "comfyanonymous/flux_text_encoders", "t5xxl_fp16.safetensors");
+    // The FLUX autoencoder. Sourced from Comfy-Org's ungated re-host (byte-identical, 335,304,388 B)
+    // rather than black-forest-labs/FLUX.1-schnell, which is gated and 401s without an HF token.
     private static readonly ModelFile FluxVae =
-        new(ModelFileRole.Vae, "black-forest-labs/FLUX.1-schnell", "ae.safetensors");
+        new(ModelFileRole.Vae, "Comfy-Org/Lumina_Image_2.0_Repackaged", "split_files/vae/ae.safetensors");
 
     private static readonly ModelLicense SchnellLicense =
         new("Apache-2.0", Gated: false, "https://huggingface.co/black-forest-labs/FLUX.1-schnell");
