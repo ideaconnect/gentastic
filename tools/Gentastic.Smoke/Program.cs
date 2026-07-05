@@ -54,16 +54,25 @@ await using var engine = new StableDiffusionEngine(
     NullLogger<StableDiffusionEngine>.Instance, detector, new JsonSettingsService());
 var service = new GenerationService(repository, engine, detector, NullLogger<GenerationService>.Instance);
 
+// Size/steps/cfg default to a fast 512² pass but can be overridden to reproduce the app's real
+// defaults (1024², see GenerateViewModel) for debugging VAE-decode memory behaviour, e.g.
+//   GENTASTIC_W=1024 GENTASTIC_H=1024 dotnet run --project tools/Gentastic.Smoke
+static int EnvInt(string name, int fallback) =>
+    int.TryParse(Environment.GetEnvironmentVariable(name), out var v) ? v : fallback;
+static float EnvFloat(string name, float fallback) =>
+    float.TryParse(Environment.GetEnvironmentVariable(name), System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : fallback;
+
 var request = new TextToImageRequest
 {
     Prompt = "a single red apple on a wooden table, studio photo, sharp focus, soft light",
-    Width = 512,
-    Height = 512,
-    Steps = 4,
+    Width = EnvInt("GENTASTIC_W", 512),
+    Height = EnvInt("GENTASTIC_H", 512),
+    Steps = EnvInt("GENTASTIC_STEPS", 4),
     Seed = 42,
-    Cfg = 1.0f,
+    Cfg = EnvFloat("GENTASTIC_CFG", 1.0f),
     Sampler = Sampler.Euler,
 };
+Console.WriteLine($"Request: {request.Width}x{request.Height}, {request.Steps} steps, cfg {request.Cfg}.");
 
 var sw = Stopwatch.StartNew();
 var image = await service.RunAsync(

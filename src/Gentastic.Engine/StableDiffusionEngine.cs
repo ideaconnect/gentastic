@@ -84,6 +84,17 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
                     .WithVaeTiling()               // tiled VAE decode — guards the Strix Halo VAE OOM
                     .WithDiffusionFlashAttention()
                     .WithMultithreading();
+
+                // The AMD Vulkan driver caps a single GPU buffer at ~2 GB (maxStorageBufferRange),
+                // but FLUX VAE decode at 1024² needs one ~8 GB compute buffer. It fails with
+                // ErrorOutOfDeviceMemory *after* sampling completes (sd.cpp #1290), surfacing as a
+                // null image. Tiling doesn't help — ggml still reserves the full-resolution decode
+                // graph up-front. So decode the VAE in system RAM (no per-buffer limit); the
+                // diffusion transformer, the expensive part, stays on the GPU. Only Vulkan is capped
+                // this way, so leave VAE on-device for CPU/CUDA/ROCm where the allocation succeeds.
+                if (Backend == GenerationBackend.Vulkan)
+                    parameter = parameter.WithVaeOnCpu();
+
                 return new DiffusionModel(parameter);
             }, ct).ConfigureAwait(false);
 
