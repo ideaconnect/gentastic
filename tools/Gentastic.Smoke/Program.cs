@@ -35,9 +35,15 @@ var files = spec.Files.ToDictionary(f => f.Role, Local);
 var missing = files.Values.Where(p => !File.Exists(p)).ToList();
 if (missing.Count > 0)
 {
-    Console.Error.WriteLine("Model not fully downloaded. Missing:");
-    missing.ForEach(m => Console.Error.WriteLine("  " + m));
-    return 3;
+    // GenerationService.RunAsync downloads anything missing before generating; set
+    // GENTASTIC_REQUIRE_CACHED=1 to instead fail fast when the model isn't already on disk.
+    if (Environment.GetEnvironmentVariable("GENTASTIC_REQUIRE_CACHED") == "1")
+    {
+        Console.Error.WriteLine("Model not fully downloaded. Missing:");
+        missing.ForEach(m => Console.Error.WriteLine("  " + m));
+        return 3;
+    }
+    Console.WriteLine($"{missing.Count} file(s) not cached — they'll download first.");
 }
 
 StableDiffusion.NET.StableDiffusionCpp.Log += (_, a) => Console.WriteLine($"[sd:{a.Level}] {a.Text}");
