@@ -35,8 +35,24 @@ public partial class App : Application
 
         base.OnStartup(e);
         await _host.StartAsync();
-        ThemeApplier.Apply(_host.Services.GetRequiredService<ISettingsService>().Current.Theme);
-        RuntimeCheck.Warn(_host.Services.GetRequiredService<IRuntimeDetector>());
+        var settings = _host.Services.GetRequiredService<ISettingsService>();
+        ThemeApplier.Apply(settings.Current.Theme);
+
+        // Screenshot harness for the dialog itself: show it, let it self-capture and shut down.
+        if (Environment.GetEnvironmentVariable("GENTASTIC_SHOT_RUNTIME") == "1")
+        {
+            _host.Services.GetRequiredService<RuntimeDialog>().ShowDialog();
+            return;
+        }
+
+        // First run: let the user confirm the auto-detected compute runtime (CUDA → ROCm → Vulkan →
+        // CPU). Skipped once confirmed, and during a MainWindow screenshot run (it would block capture).
+        if (!settings.Current.RuntimeConfirmed
+            && Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") != "1")
+        {
+            _host.Services.GetRequiredService<RuntimeDialog>().ShowDialog();
+        }
+
         _host.Services.GetRequiredService<MainWindow>().Show();
     }
 
@@ -91,6 +107,10 @@ internal static class HostBuilderExtensions
         // Shell.
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainWindowViewModel>();
+
+        // First-run runtime-detection dialog (transient — shown once at startup).
+        services.AddTransient<RuntimeDialog>();
+        services.AddTransient<RuntimeDialogViewModel>();
 
         // Pages + view models.
         services.AddSingleton<GeneratePage>();
