@@ -14,6 +14,12 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
     <PackageReference Include="StableDiffusion.NET.Backend.Cpu" Version="7.0.0" />
     <PackageReference Include="StableDiffusion.NET.Backend.Vulkan" Version="7.0.0" />
+    <!-- NVIDIA CUDA 12 backend — opt-in and NVIDIA-only (~177 MB), so it's excluded from the default
+         (AMD/CPU) build and included only for a CUDA variant: publish with -p:IncludeCuda=true. The
+         runtime detector auto-lights it up (native folder "cuda12") when an NVIDIA GPU + CUDA 12
+         toolkit are present. -->
+    <PackageReference Include="StableDiffusion.NET.Backend.Cuda12.Windows" Version="7.0.0"
+                      Condition="'$(IncludeCuda)' == 'true'" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
     <PackageReference Include="WPF-UI.DependencyInjection" Version="4.3.0" />
   </ItemGroup>
