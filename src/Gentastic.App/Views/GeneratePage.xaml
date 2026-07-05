@@ -29,7 +29,7 @@
                                Margin="10,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <TextBlock Text="Preset" Margin="0,0,0,4" />
+                <TextBlock Text="Preset" Style="{StaticResource FieldLabelStyle}" />
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -51,12 +51,12 @@
                                Command="{Binding SavePresetCommand}" />
                 </Grid>
 
-                <TextBlock Text="Prompt" Margin="0,0,0,4" />
+                <TextBlock Text="Prompt" Style="{StaticResource FieldLabelStyle}" />
                 <ui:TextBox PlaceholderText="Describe the image you want…"
                             Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" Margin="0,0,0,12" />
 
-                <TextBlock Text="Negative prompt" Margin="0,0,0,4" />
+                <TextBlock Text="Negative prompt" Style="{StaticResource FieldLabelStyle}" />
                 <ui:TextBox PlaceholderText="What to avoid…"
                             Text="{Binding NegativePrompt, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding IsNegativePromptEnabled}"
@@ -93,11 +93,11 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="Model" Margin="0,0,0,4" />
+                <TextBlock Text="Model" Style="{StaticResource FieldLabelStyle}" />
                 <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
                           DisplayMemberPath="DisplayName" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
 
-                <TextBlock Text="Size" Margin="0,0,0,4" />
+                <TextBlock Text="Size" Style="{StaticResource FieldLabelStyle}" />
                 <ComboBox ItemsSource="{Binding SizePresets}" SelectedItem="{Binding SelectedSize}"
                           DisplayMemberPath="Label" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
 
@@ -108,19 +108,19 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Steps" Margin="0,0,0,4" />
+                        <TextBlock Text="Steps" Style="{StaticResource FieldLabelStyle}" />
                         <ui:NumberBox Value="{Binding Steps, Mode=TwoWay}" Minimum="1" Maximum="100" />
                     </StackPanel>
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="CFG" Margin="0,0,0,4" />
+                        <TextBlock Text="CFG" Style="{StaticResource FieldLabelStyle}" />
                         <ui:NumberBox Value="{Binding Cfg, Mode=TwoWay}" Minimum="1" Maximum="20" SmallChange="0.5" />
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Text="Seed (-1 = random)" Margin="0,0,0,4" />
+                <TextBlock Text="Seed (-1 = random)" Style="{StaticResource FieldLabelStyle}" />
                 <ui:NumberBox Value="{Binding Seed, Mode=TwoWay}" Minimum="-1" Margin="0,0,0,12" />
 
-                <TextBlock Text="Sampler" Margin="0,0,0,4" />
+                <TextBlock Text="Sampler" Style="{StaticResource FieldLabelStyle}" />
                 <ComboBox ItemsSource="{Binding Samplers}" SelectedItem="{Binding SelectedSampler}"
                           HorizontalAlignment="Stretch" Margin="0,0,0,4" />
             </StackPanel>
