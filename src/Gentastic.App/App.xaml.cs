@@ -3,6 +3,7 @@ using Gentastic.App.ViewModels;
 using Gentastic.App.Views;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Services;
+using Gentastic.Core.Settings;
 using Gentastic.Engine;
 using Gentastic.Hardware;
 using Gentastic.Models;
@@ -53,9 +54,19 @@ internal static class HostBuilderExtensions
         services.AddHttpClient();
 
         // Domain services.
+        services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<IRuntimeDetector, RuntimeDetector>();
         services.AddSingleton<IModelCatalog, ModelCatalog>();
-        services.AddSingleton<HuggingFaceOptions>();
+        services.AddSingleton(sp =>
+        {
+            var settings = sp.GetRequiredService<ISettingsService>();
+            return new HuggingFaceOptions
+            {
+                TokenProvider = () => string.IsNullOrWhiteSpace(settings.Current.HuggingFaceToken)
+                    ? Environment.GetEnvironmentVariable("HF_TOKEN")
+                    : settings.Current.HuggingFaceToken,
+            };
+        });
         services.AddSingleton<IModelRepository, HuggingFaceModelRepository>();
         services.AddSingleton<IDiffusionEngine, StableDiffusionEngine>();
         services.AddSingleton<IGenerationService, GenerationService>();

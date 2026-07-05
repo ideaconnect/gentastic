@@ -119,6 +119,12 @@ public sealed class HuggingFaceModelRepository : IModelRepository
         using var response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct)
             .ConfigureAwait(false);
+
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            throw new UnauthorizedAccessException(
+                $"'{file.Repo}' is gated. Accept the model's license on huggingface.co, then set a "
+                + "Hugging Face token in Settings (or the HF_TOKEN environment variable).");
+
         response.EnsureSuccessStatusCode();
 
         // Append only when the server honoured the range; otherwise it sent the full file, so restart.

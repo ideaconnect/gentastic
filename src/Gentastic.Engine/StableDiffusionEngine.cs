@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
+using Gentastic.Core.Settings;
 using HPPH;
 using Microsoft.Extensions.Logging;
 using StableDiffusion.NET;
@@ -22,15 +23,17 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
     private readonly SemaphoreSlim _gate = new(1, 1);
     private DiffusionModel? _model;
 
-    public StableDiffusionEngine(ILogger<StableDiffusionEngine> logger, IRuntimeDetector detector)
+    public StableDiffusionEngine(
+        ILogger<StableDiffusionEngine> logger, IRuntimeDetector detector, ISettingsService settings)
     {
         _logger = logger;
 
         // StableDiffusion.NET loads its native library once, lazily, on the FIRST native call and
         // caches it for the whole process. The backend must therefore be enabled before that first
         // call — otherwise only the default CPU backend is active and generation silently runs on the
-        // CPU. Select it here, immediately before InitializeEvents (the first native call).
-        Backend = detector.Detect().RecommendedBackend;
+        // CPU. Select it here, immediately before InitializeEvents (the first native call). An explicit
+        // user preference wins over detection; Auto defers to the detector.
+        Backend = ResolveBackend(settings.Current.PreferredBackend, detector);
 
         if (Interlocked.Exchange(ref _eventsInitialized, 1) == 0)
         {
@@ -153,6 +156,14 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
 
         return parameter;
     }
+
+    private static GenerationBackend ResolveBackend(BackendPreference preference, IRuntimeDetector detector) =>
+        preference switch
+        {
+            BackendPreference.Vulkan => GenerationBackend.Vulkan,
+            BackendPreference.Cpu => GenerationBackend.Cpu,
+            _ => detector.Detect().RecommendedBackend,
+        };
 
     /// <summary>Enable the requested accelerator before the native library is loaded. CPU stays
     /// enabled as a safety net; the accelerator's higher <see cref="IBackend.Priority"/> makes the

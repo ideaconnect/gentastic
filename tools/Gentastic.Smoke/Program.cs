@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
 using Gentastic.Core.Services;
+using Gentastic.Core.Settings;
 using Gentastic.Engine;
 using Gentastic.Hardware;
 using Gentastic.Models;
@@ -49,7 +50,8 @@ Console.WriteLine($"Runtime: {hardware.Summary}");
 // app uses (GitHub #19). The model is already cached, so EnsureInstalled resolves without downloading.
 var httpFactory = new SimpleHttpClientFactory();
 var repository = new HuggingFaceModelRepository(httpFactory, NullLogger<HuggingFaceModelRepository>.Instance);
-await using var engine = new StableDiffusionEngine(NullLogger<StableDiffusionEngine>.Instance, detector);
+await using var engine = new StableDiffusionEngine(
+    NullLogger<StableDiffusionEngine>.Instance, detector, new JsonSettingsService());
 var service = new GenerationService(repository, engine, detector, NullLogger<GenerationService>.Instance);
 
 var request = new TextToImageRequest

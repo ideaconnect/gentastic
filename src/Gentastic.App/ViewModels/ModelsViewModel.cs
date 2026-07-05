@@ -53,7 +53,21 @@ public partial class ModelsViewModel : ObservableObject
         foreach (var spec in _catalog.GetAvailableModels())
             Models.Add(new ModelRowViewModel(spec, _repository.IsInstalled(spec)));
 
-        StatusMessage = $"Cache: {_repository.CacheRoot}";
+        StatusMessage = $"Cache: {_repository.CacheRoot} · {FormatBytes(_repository.GetCacheSizeBytes())} on disk";
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        double size = bytes;
+        var unit = 0;
+        while (size >= 1024 && unit < units.Length - 1)
+        {
+            size /= 1024;
+            unit++;
+        }
+
+        return $"{size:F1} {units[unit]}";
     }
 
     [RelayCommand]

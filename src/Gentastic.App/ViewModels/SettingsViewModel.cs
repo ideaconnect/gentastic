@@ -4,34 +4,59 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gentastic.Core.Abstractions;
+using Gentastic.Core.Settings;
 
 namespace Gentastic.App.ViewModels;
 
-/// <summary>Shows the detected runtime, the model cache and Hugging Face token status.</summary>
+/// <summary>Shows the detected runtime and model cache, and edits the Hugging Face token and the
+/// preferred backend (persisted via <see cref="ISettingsService"/>).</summary>
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly IRuntimeDetector _detector;
     private readonly IModelRepository _repository;
     private readonly IDiffusionEngine _engine;
+    private readonly ISettingsService _settings;
 
     public SettingsViewModel(
         IRuntimeDetector detector,
         IModelRepository repository,
-        IDiffusionEngine engine)
+        IDiffusionEngine engine,
+        ISettingsService settings)
     {
         _detector = detector;
         _repository = repository;
         _engine = engine;
+        _settings = settings;
+
+        _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
+        _preferredBackend = settings.Current.PreferredBackend;
         Refresh();
     }
 
     public ObservableCollection<string> Adapters { get; } = [];
+
+    public IReadOnlyList<BackendPreference> BackendOptions { get; } = Enum.GetValues<BackendPreference>();
 
     [ObservableProperty] private string _hardwareSummary = string.Empty;
     [ObservableProperty] private string _backendStatus = string.Empty;
     [ObservableProperty] private string _cacheRoot = string.Empty;
     [ObservableProperty] private string _cacheSize = string.Empty;
     [ObservableProperty] private string _tokenStatus = string.Empty;
+    [ObservableProperty] private string _huggingFaceToken = string.Empty;
+    [ObservableProperty] private BackendPreference _preferredBackend;
+    [ObservableProperty] private string _saveStatus = string.Empty;
+
+    [RelayCommand]
+    private void Save()
+    {
+        _settings.Current.HuggingFaceToken =
+            string.IsNullOrWhiteSpace(HuggingFaceToken) ? null : HuggingFaceToken.Trim();
+        _settings.Current.PreferredBackend = PreferredBackend;
+        _settings.Save();
+
+        SaveStatus = "Saved. Token applies to the next download; backend changes take effect after restart.";
+        Refresh();
+    }
 
     [RelayCommand]
     private void Refresh()
@@ -46,14 +71,17 @@ public partial class SettingsViewModel : ObservableObject
             Adapters.Add($"{adapter.Name} — {adapter.Vendor}, {adapter.TotalMemoryGiB:F1} GiB total");
 
         BackendStatus = _engine.IsAvailable
-            ? $"{_engine.Backend} ready"
-            : "Inference engine implementation pending (milestone M1).";
+            ? $"Active backend: {_engine.Backend}"
+            : "Inference engine unavailable.";
 
         CacheRoot = _repository.CacheRoot;
         CacheSize = FormatBytes(_repository.GetCacheSizeBytes());
-        TokenStatus = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HF_TOKEN"))
-            ? "No HF_TOKEN set — required for gated models such as FLUX.1-dev."
-            : "HF_TOKEN detected.";
+
+        var hasToken = !string.IsNullOrWhiteSpace(_settings.Current.HuggingFaceToken)
+                       || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HF_TOKEN"));
+        TokenStatus = hasToken
+            ? "Hugging Face token set — gated models such as FLUX.1-dev can download."
+            : "No Hugging Face token — required for gated models such as FLUX.1-dev.";
     }
 
     [RelayCommand]
