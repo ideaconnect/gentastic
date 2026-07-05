@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Settings;
+using Microsoft.Win32;
 
 namespace Gentastic.App.ViewModels;
 
@@ -30,6 +31,7 @@ public partial class SettingsViewModel : ObservableObject
 
         _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
         _preferredBackend = settings.Current.PreferredBackend;
+        _cacheDirectoryOverride = settings.Current.CacheDirectory ?? string.Empty;
         Refresh();
     }
 
@@ -44,7 +46,16 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _tokenStatus = string.Empty;
     [ObservableProperty] private string _huggingFaceToken = string.Empty;
     [ObservableProperty] private BackendPreference _preferredBackend;
+    [ObservableProperty] private string _cacheDirectoryOverride = string.Empty;
     [ObservableProperty] private string _saveStatus = string.Empty;
+
+    [RelayCommand]
+    private void BrowseCacheDirectory()
+    {
+        var dialog = new OpenFolderDialog { Title = "Choose a model cache folder" };
+        if (dialog.ShowDialog() == true)
+            CacheDirectoryOverride = dialog.FolderName;
+    }
 
     [RelayCommand]
     private void Save()
@@ -52,6 +63,8 @@ public partial class SettingsViewModel : ObservableObject
         _settings.Current.HuggingFaceToken =
             string.IsNullOrWhiteSpace(HuggingFaceToken) ? null : HuggingFaceToken.Trim();
         _settings.Current.PreferredBackend = PreferredBackend;
+        _settings.Current.CacheDirectory =
+            string.IsNullOrWhiteSpace(CacheDirectoryOverride) ? null : CacheDirectoryOverride.Trim();
         _settings.Save();
 
         SaveStatus = "Saved. Token applies to the next download; backend changes take effect after restart.";

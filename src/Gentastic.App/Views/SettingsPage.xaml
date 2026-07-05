@@ -37,6 +37,18 @@
                     <TextBlock Margin="0,4,0,10" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                         <Run Text="On disk: " /><Run Text="{Binding CacheSize}" />
                     </TextBlock>
+                    <TextBlock Text="Cache folder override (blank = default; applies after restart)"
+                               FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox Grid.Column="0" PlaceholderText="Default location"
+                                    Text="{Binding CacheDirectoryOverride, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:Button Grid.Column="1" Content="Browse…" Margin="8,0,0,0"
+                                   Command="{Binding BrowseCacheDirectoryCommand}" />
+                    </Grid>
                     <ui:Button Content="Open cache folder" Icon="{ui:SymbolIcon FolderOpen24}"
                                Command="{Binding OpenCacheFolderCommand}" HorizontalAlignment="Left" />
                 </StackPanel>

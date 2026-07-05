@@ -17,4 +17,8 @@ public sealed class AppSettings
     /// <summary>Preferred generation backend. Applied at startup (the native backend is fixed for the
     /// process lifetime, so changes take effect on the next launch).</summary>
     public BackendPreference PreferredBackend { get; set; } = BackendPreference.Auto;
+
+    /// <summary>Overrides where models are cached. Null = the default
+    /// <c>%LOCALAPPDATA%\Gentastic\models</c>. Applied on the next launch.</summary>
+    public string? CacheDirectory { get; set; }
 }

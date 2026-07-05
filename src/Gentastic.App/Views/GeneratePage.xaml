@@ -91,9 +91,20 @@
                 <ComboBox ItemsSource="{Binding Samplers}" SelectedItem="{Binding SelectedSampler}"
                           HorizontalAlignment="Stretch" Margin="0,0,0,20" />
 
-                <ui:Button Content="Generate" Appearance="Primary" HorizontalAlignment="Stretch"
-                           Icon="{ui:SymbolIcon ImageSparkle24}"
-                           Command="{Binding GenerateCommand}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:Button Grid.Column="0" Content="Generate" Appearance="Primary"
+                               HorizontalAlignment="Stretch" Icon="{ui:SymbolIcon ImageSparkle24}"
+                               Command="{Binding GenerateCommand}" />
+                    <ui:Button Grid.Column="1" Content="Cancel" Margin="8,0,0,0"
+                               Icon="{ui:SymbolIcon Dismiss24}" Command="{Binding CancelCommand}"
+                               Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress}" Height="4" Margin="0,8,0,0"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                 <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <ui:Button Content="Open output folder" Icon="{ui:SymbolIcon FolderOpen24}"

@@ -23,6 +23,7 @@ public partial class GenerateViewModel : ObservableObject
     private readonly IRuntimeDetector _detector;
     private readonly IGenerationService _generationService;
     private readonly IDiffusionEngine _engine;
+    private CancellationTokenSource? _cts;
 
     public GenerateViewModel(
         IModelCatalog catalog,
@@ -62,7 +63,12 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private Sampler _selectedSampler = Sampler.EulerA;
 
     [ObservableProperty] private ImageSource? _previewImage;
-    [ObservableProperty] private bool _isBusy;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
+    private bool _isBusy;
+
+    [ObservableProperty] private double _progress;
     [ObservableProperty] private string _statusMessage = "Ready.";
     [ObservableProperty] private string? _lastOutputPath;
 
@@ -151,29 +157,38 @@ public partial class GenerateViewModel : ObservableObject
             return;
         }
 
+        var hardware = _detector.Detect();
+        if (!_engine.IsAvailable)
+        {
+            StatusMessage = $"No inference backend available ({hardware.Summary}).";
+            return;
+        }
+
+        if (UseInputImage && InitImage is null)
+        {
+            StatusMessage = "Add an input image, or turn off image-to-image.";
+            return;
+        }
+
+        _cts = new CancellationTokenSource();
         IsBusy = true;
+        Progress = 0;
         try
         {
-            var hardware = _detector.Detect();
-
-            if (!_engine.IsAvailable)
-            {
-                StatusMessage = $"No inference backend available ({hardware.Summary}).";
-                return;
-            }
-
-            if (UseInputImage && InitImage is null)
-            {
-                StatusMessage = "Add an input image, or turn off image-to-image.";
-                return;
-            }
-
             var request = BuildRequest();
-            var progress = new Progress<GenerationStatus>(s => StatusMessage = s.Message);
-            var image = await _generationService.RunAsync(request, SelectedModel, progress);
+            var progress = new Progress<GenerationStatus>(s =>
+            {
+                StatusMessage = s.Message;
+                Progress = s.Fraction;
+            });
+            var image = await _generationService.RunAsync(request, SelectedModel, progress, _cts.Token);
             PreviewImage = image.ToImageSource();
             LastOutputPath = SaveOutput(image, SelectedModel, request);
             StatusMessage = $"Saved to {LastOutputPath}";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Cancelled.";
         }
         catch (Exception ex)
         {
@@ -182,7 +197,19 @@ public partial class GenerateViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+            Progress = 0;
+            _cts.Dispose();
+            _cts = null;
         }
+    }
+
+    private bool CanCancel() => IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void Cancel()
+    {
+        StatusMessage = "Cancelling…";
+        _cts?.Cancel();
     }
 
     private GenerationRequest BuildRequest()

@@ -62,6 +62,9 @@ internal static class HostBuilderExtensions
             var settings = sp.GetRequiredService<ISettingsService>();
             return new HuggingFaceOptions
             {
+                CacheRoot = string.IsNullOrWhiteSpace(settings.Current.CacheDirectory)
+                    ? null
+                    : settings.Current.CacheDirectory,
                 TokenProvider = () => string.IsNullOrWhiteSpace(settings.Current.HuggingFaceToken)
                     ? Environment.GetEnvironmentVariable("HF_TOKEN")
                     : settings.Current.HuggingFaceToken,
