@@ -30,6 +30,9 @@
                 <ui:NavigationViewItem Content="Models"
                                        TargetPageType="{x:Type views:ModelsPage}"
                                        Icon="{ui:SymbolIcon Cube24}" />
+                <ui:NavigationViewItem Content="Gallery"
+                                       TargetPageType="{x:Type views:GalleryPage}"
+                                       Icon="{ui:SymbolIcon Image24}" />
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem Content="Settings"

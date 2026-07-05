@@ -83,6 +83,8 @@ internal static class HostBuilderExtensions
         services.AddSingleton<GenerateViewModel>();
         services.AddSingleton<ModelsPage>();
         services.AddSingleton<ModelsViewModel>();
+        services.AddSingleton<GalleryPage>();
+        services.AddSingleton<GalleryViewModel>();
         services.AddSingleton<SettingsPage>();
         services.AddSingleton<SettingsViewModel>();
 
