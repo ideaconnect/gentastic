@@ -166,6 +166,14 @@
                 <ui:NumberBox Value="{Binding Seed, Mode=TwoWay}" Minimum="-1" Margin="0,0,0,12" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Images" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Images" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center"
+                               ToolTip="How many to generate in one run (each saved to the Gallery)" />
+                </StackPanel>
+                <ui:NumberBox Value="{Binding BatchCount, Mode=TwoWay}" Minimum="1" Maximum="4" Margin="0,0,0,12" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                     <fa:IconBlock Icon="ChartLine" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Sampler" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />

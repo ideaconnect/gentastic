@@ -70,6 +70,7 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private long _seed = -1;
     [ObservableProperty] private double _cfg = 1.0;
     [ObservableProperty] private Sampler _selectedSampler = Sampler.EulerA;
+    [ObservableProperty] private int _batchCount = 1;
 
     [ObservableProperty] private ImageSource? _previewImage;
 
@@ -188,16 +189,31 @@ public partial class GenerateViewModel : ObservableObject
         Progress = 0;
         try
         {
-            var request = BuildRequest();
+            var count = Math.Max(1, BatchCount);
+            var currentIndex = 0;
             var progress = new Progress<GenerationStatus>(s =>
             {
-                StatusMessage = s.Message;
+                StatusMessage = count > 1 ? $"[{currentIndex + 1}/{count}] {s.Message}" : s.Message;
                 Progress = s.Fraction;
             });
-            var image = await _generationService.RunAsync(request, SelectedModel, progress, _cts.Token);
-            PreviewImage = image.ToImageSource();
-            LastOutputPath = SaveOutput(image, SelectedModel, request);
-            StatusMessage = $"Saved to {LastOutputPath}";
+
+            string? savedPath = null;
+            for (var i = 0; i < count; i++)
+            {
+                currentIndex = i;
+                // Vary the seed per image so a batch gives variations: a fixed seed stays reproducible
+                // (seed + i), while -1 lets the engine randomise each one.
+                var seed = Seed < 0 ? -1 : Seed + i;
+                var request = BuildRequest(seed);
+                var image = await _generationService.RunAsync(request, SelectedModel, progress, _cts.Token);
+                PreviewImage = image.ToImageSource();
+                savedPath = SaveOutput(image, SelectedModel, request);
+            }
+
+            LastOutputPath = savedPath;
+            StatusMessage = count > 1
+                ? $"Generated {count} images — saved to {OutputDirectory}. See the Gallery."
+                : $"Saved to {savedPath}";
         }
         catch (OperationCanceledException)
         {
@@ -315,7 +331,7 @@ public partial class GenerateViewModel : ObservableObject
         StatusMessage = $"Deleted preset '{name}'.";
     }
 
-    private GenerationRequest BuildRequest()
+    private GenerationRequest BuildRequest(long seed)
     {
         var negative = string.IsNullOrWhiteSpace(NegativePrompt) ? null : NegativePrompt;
 
@@ -327,7 +343,7 @@ public partial class GenerateViewModel : ObservableObject
                 Width = SelectedSize.Width,
                 Height = SelectedSize.Height,
                 Steps = Steps,
-                Seed = Seed,
+                Seed = seed,
                 Cfg = (float)Cfg,
                 Sampler = SelectedSampler,
                 InitImage = InitImage,
@@ -341,7 +357,7 @@ public partial class GenerateViewModel : ObservableObject
             Width = SelectedSize.Width,
             Height = SelectedSize.Height,
             Steps = Steps,
-            Seed = Seed,
+            Seed = seed,
             Cfg = (float)Cfg,
             Sampler = SelectedSampler,
         };
