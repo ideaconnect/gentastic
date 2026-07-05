@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Gentastic.App;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Settings;
 using Microsoft.Win32;
@@ -32,12 +33,15 @@ public partial class SettingsViewModel : ObservableObject
         _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
         _preferredBackend = settings.Current.PreferredBackend;
         _cacheDirectoryOverride = settings.Current.CacheDirectory ?? string.Empty;
+        _theme = settings.Current.Theme;
         Refresh();
     }
 
     public ObservableCollection<string> Adapters { get; } = [];
 
     public IReadOnlyList<BackendPreference> BackendOptions { get; } = Enum.GetValues<BackendPreference>();
+
+    public IReadOnlyList<ThemePreference> ThemeOptions { get; } = Enum.GetValues<ThemePreference>();
 
     [ObservableProperty] private string _hardwareSummary = string.Empty;
     [ObservableProperty] private string _backendStatus = string.Empty;
@@ -47,6 +51,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _huggingFaceToken = string.Empty;
     [ObservableProperty] private BackendPreference _preferredBackend;
     [ObservableProperty] private string _cacheDirectoryOverride = string.Empty;
+    [ObservableProperty] private ThemePreference _theme;
     [ObservableProperty] private string _saveStatus = string.Empty;
 
     [RelayCommand]
@@ -65,9 +70,11 @@ public partial class SettingsViewModel : ObservableObject
         _settings.Current.PreferredBackend = PreferredBackend;
         _settings.Current.CacheDirectory =
             string.IsNullOrWhiteSpace(CacheDirectoryOverride) ? null : CacheDirectoryOverride.Trim();
+        _settings.Current.Theme = Theme;
         _settings.Save();
 
-        SaveStatus = "Saved. Token applies to the next download; backend changes take effect after restart.";
+        ThemeApplier.Apply(Theme); // apply immediately
+        SaveStatus = "Saved. Token applies to the next download; backend/cache changes take effect after restart.";
         Refresh();
     }
 

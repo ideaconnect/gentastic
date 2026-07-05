@@ -30,6 +30,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         await _host.StartAsync();
+        ThemeApplier.Apply(_host.Services.GetRequiredService<ISettingsService>().Current.Theme);
         _host.Services.GetRequiredService<MainWindow>().Show();
     }
 

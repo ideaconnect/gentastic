@@ -8,6 +8,14 @@ public enum BackendPreference
     Cpu,
 }
 
+/// <summary>UI theme. <see cref="System"/> follows the OS setting.</summary>
+public enum ThemePreference
+{
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>User-configurable settings, persisted as JSON.</summary>
 public sealed class AppSettings
 {
@@ -21,4 +29,7 @@ public sealed class AppSettings
     /// <summary>Overrides where models are cached. Null = the default
     /// <c>%LOCALAPPDATA%\Gentastic\models</c>. Applied on the next launch.</summary>
     public string? CacheDirectory { get; set; }
+
+    /// <summary>UI theme.</summary>
+    public ThemePreference Theme { get; set; } = ThemePreference.Dark;
 }

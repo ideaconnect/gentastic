@@ -29,6 +29,16 @@
                 </StackPanel>
             </ui:Card>
 
+            <!-- Appearance -->
+            <ui:Card Padding="16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <TextBlock Text="Theme" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Theme}"
+                              HorizontalAlignment="Left" MinWidth="180" />
+                </StackPanel>
+            </ui:Card>
+
             <!-- Model cache -->
             <ui:Card Padding="16" Margin="0,0,0,12">
                 <StackPanel>
