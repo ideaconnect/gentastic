@@ -77,6 +77,11 @@ internal static class HostBuilderExtensions
         services.AddSingleton<IModelRepository, HuggingFaceModelRepository>();
         services.AddSingleton<IDiffusionEngine, StableDiffusionEngine>();
         services.AddSingleton<IGenerationService, GenerationService>();
+        services.AddSingleton(new GitHubUpdateOptions
+        {
+            CurrentVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0),
+        });
+        services.AddSingleton<IUpdateService, GitHubUpdateService>();
 
         // Shell.
         services.AddSingleton<MainWindow>();

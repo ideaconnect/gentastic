@@ -1,0 +1,43 @@
+<#
+.SYNOPSIS
+  Produces a self-contained, portable build of Gentastic (no .NET install required) and zips it.
+.DESCRIPTION
+  A RID-specific self-contained publish flattens/dedupes the StableDiffusion.NET native backends
+  (they all ship as runtimes/win-x64/native/<variant>/stable-diffusion.dll). This script reconstructs
+  that folder from the NuGet packages so the loader finds the Vulkan/CPU backends at runtime.
+.EXAMPLE
+  powershell -File scripts/publish-portable.ps1
+#>
+param(
+    [string]$Runtime = "win-x64",
+    [string]$Configuration = "Release"
+)
+
+$ErrorActionPreference = "Stop"
+$root = Split-Path $PSScriptRoot -Parent
+$outDir = Join-Path $root "dist\Gentastic-$Runtime"
+$zipPath = Join-Path $root "dist\Gentastic-portable-$Runtime.zip"
+
+if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
+
+dotnet publish (Join-Path $root "src\Gentastic.App\Gentastic.App.csproj") `
+    -c $Configuration -r $Runtime --self-contained true -o $outDir
+
+# Reconstruct runtimes/<rid>/native/<variant>/ from the backend packages (publish flattens them).
+$nativeDst = Join-Path $outDir "runtimes\$Runtime\native"
+Remove-Item (Join-Path $outDir "stable-diffusion.dll") -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force $nativeDst | Out-Null
+
+$packages = Join-Path $env:USERPROFILE ".nuget\packages"
+foreach ($pkg in @("stablediffusion.net.backend.vulkan", "stablediffusion.net.backend.cpu")) {
+    $ver = Get-ChildItem (Join-Path $packages $pkg) -Directory | Sort-Object Name -Descending | Select-Object -First 1
+    $src = Join-Path $ver.FullName "runtimes\$Runtime\native"
+    if (Test-Path $src) { Copy-Item (Join-Path $src '*') $nativeDst -Recurse -Force }
+}
+Write-Host "Native backends: $((Get-ChildItem $nativeDst -Directory).Name -join ', ')"
+
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+Compress-Archive -Path (Join-Path $outDir '*') -DestinationPath $zipPath
+
+$sizeMb = [math]::Round((Get-Item $zipPath).Length / 1MB, 1)
+Write-Host "Portable build: $zipPath ($sizeMb MB)"

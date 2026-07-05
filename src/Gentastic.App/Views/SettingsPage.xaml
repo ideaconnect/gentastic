@@ -76,6 +76,20 @@
                 </StackPanel>
             </ui:Card>
 
+            <!-- Updates -->
+            <ui:Card Padding="16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Updates" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <ui:Button Content="Check for updates" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Command="{Binding CheckForUpdatesCommand}" HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" Margin="0,8,0,0"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <ui:HyperlinkButton Content="View releases"
+                                        NavigateUri="https://github.com/ideaconnect/gentastic/releases"
+                                        Margin="0,4,0,0" HorizontalAlignment="Left" />
+                </StackPanel>
+            </ui:Card>
+
             <StackPanel Orientation="Horizontal">
                 <ui:Button Content="Save" Appearance="Primary" Icon="{ui:SymbolIcon Save24}"
                            Command="{Binding SaveCommand}" />

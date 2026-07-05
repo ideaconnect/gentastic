@@ -23,6 +23,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <Version>0.1.0</Version>
+    <!-- The StableDiffusion.NET CPU backend ships stable-diffusion.dll in several AVX subfolders;
+         they land in distinct runtime paths, so allow the "duplicate" during self-contained publish. -->
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
 </Project>

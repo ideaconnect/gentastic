@@ -18,17 +18,20 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IModelRepository _repository;
     private readonly IDiffusionEngine _engine;
     private readonly ISettingsService _settings;
+    private readonly IUpdateService _updateService;
 
     public SettingsViewModel(
         IRuntimeDetector detector,
         IModelRepository repository,
         IDiffusionEngine engine,
-        ISettingsService settings)
+        ISettingsService settings,
+        IUpdateService updateService)
     {
         _detector = detector;
         _repository = repository;
         _engine = engine;
         _settings = settings;
+        _updateService = updateService;
 
         _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
         _preferredBackend = settings.Current.PreferredBackend;
@@ -53,6 +56,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _cacheDirectoryOverride = string.Empty;
     [ObservableProperty] private ThemePreference _theme;
     [ObservableProperty] private string _saveStatus = string.Empty;
+    [ObservableProperty] private string _updateStatus = string.Empty;
 
     [RelayCommand]
     private void BrowseCacheDirectory()
@@ -109,6 +113,25 @@ public partial class SettingsViewModel : ObservableObject
     {
         Directory.CreateDirectory(CacheRoot);
         Process.Start(new ProcessStartInfo { FileName = CacheRoot, UseShellExecute = true });
+    }
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        UpdateStatus = "Checking…";
+        try
+        {
+            var info = await _updateService.CheckAsync();
+            UpdateStatus = info.UpdateAvailable
+                ? $"Update available: {info.LatestTag} (you have v{info.CurrentVersion}). See releases below."
+                : info.LatestVersion is null
+                    ? $"No releases published yet (you have v{info.CurrentVersion})."
+                    : $"You're up to date (v{info.CurrentVersion}).";
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = $"Update check failed: {ex.Message}";
+        }
     }
 
     private static string FormatBytes(long bytes)
