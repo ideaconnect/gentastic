@@ -58,12 +58,20 @@
                     </Button>
                 </Grid>
 
-                <TextBlock Text="Prompt" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Pen" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Prompt" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                </StackPanel>
                 <ui:TextBox PlaceholderText="Describe the image you want…"
                             Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" Margin="0,0,0,12" />
 
-                <TextBlock Text="Negative prompt" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Ban" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Negative prompt" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                </StackPanel>
                 <ui:TextBox PlaceholderText="What to avoid…"
                             Text="{Binding NegativePrompt, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding IsNegativePromptEnabled}"
@@ -72,8 +80,8 @@
                            FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                            Margin="0,0,0,12" />
 
-                <ui:ToggleSwitch Content="Use an input image (image-to-image)"
-                                 IsChecked="{Binding UseInputImage}" Margin="0,0,0,8" />
+                <ui:ToggleSwitch Content="Image to image" IsChecked="{Binding UseInputImage}"
+                                 ToolTip="Start from an input image instead of noise" Margin="0,0,0,8" />
                 <Border Visibility="{Binding UseInputImage, Converter={StaticResource BoolToVis}}"
                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
                         CornerRadius="6" Padding="10" Margin="0,0,0,12">
@@ -102,17 +110,26 @@
                             <Button Style="{StaticResource SecondaryButtonStyle}" Content="Clear" Margin="8,0,0,0"
                                     Command="{Binding ClearInitImageCommand}" />
                         </StackPanel>
-                        <TextBlock Text="Denoise strength (higher = more change)" Margin="0,10,0,4" />
+                        <TextBlock Text="Denoise strength" Style="{StaticResource FieldLabelStyle}" Margin="0,10,0,4"
+                                   ToolTip="Higher = more change from the input image" />
                         <Slider Minimum="0.1" Maximum="1.0" Value="{Binding DenoiseStrength}"
                                 TickFrequency="0.05" IsSnapToTickEnabled="True" />
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="Model" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Cube" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Model" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                </StackPanel>
                 <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
                           DisplayMemberPath="DisplayName" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
 
-                <TextBlock Text="Size" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Expand" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Size" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                </StackPanel>
                 <ComboBox ItemsSource="{Binding SizePresets}" SelectedItem="{Binding SelectedSize}"
                           DisplayMemberPath="Label" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
 
@@ -123,19 +140,36 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Steps" Style="{StaticResource FieldLabelStyle}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <fa:IconBlock Icon="LayerGroup" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                          Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="Steps" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                        </StackPanel>
                         <ui:NumberBox Value="{Binding Steps, Mode=TwoWay}" Minimum="1" Maximum="100" />
                     </StackPanel>
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="CFG" Style="{StaticResource FieldLabelStyle}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <fa:IconBlock Icon="Sliders" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                          Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="CFG" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                        </StackPanel>
                         <ui:NumberBox Value="{Binding Cfg, Mode=TwoWay}" Minimum="1" Maximum="20" SmallChange="0.5" />
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Text="Seed (-1 = random)" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="Dice" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Seed" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center"
+                               ToolTip="-1 = random each time" />
+                </StackPanel>
                 <ui:NumberBox Value="{Binding Seed, Mode=TwoWay}" Minimum="-1" Margin="0,0,0,12" />
 
-                <TextBlock Text="Sampler" Style="{StaticResource FieldLabelStyle}" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:IconBlock Icon="ChartLine" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
+                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Sampler" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
+                </StackPanel>
                 <ComboBox ItemsSource="{Binding Samplers}" SelectedItem="{Binding SelectedSampler}"
                           HorizontalAlignment="Stretch" Margin="0,0,0,4" />
             </StackPanel>

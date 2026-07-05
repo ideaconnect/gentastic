@@ -21,14 +21,10 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <fa:IconBlock Icon="CubesStacked" FontSize="19" Margin="0,3,12,0" VerticalAlignment="Top"
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <fa:IconBlock Icon="CubesStacked" FontSize="19" Margin="0,0,12,0" VerticalAlignment="Center"
                               Foreground="{StaticResource AccentBrush}" />
-                <StackPanel>
-                    <TextBlock Text="Models" FontSize="21" FontWeight="SemiBold" />
-                    <TextBlock Text="Download FLUX models from Hugging Face. Shared encoders/VAE are fetched once."
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0" />
-                </StackPanel>
+                <TextBlock Text="Models" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
             <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center"
                     Command="{Binding RefreshCommand}">

@@ -82,8 +82,8 @@
                     <TextBlock Margin="0,4,0,12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                         <Run Text="On disk: " /><Run Text="{Binding CacheSize}" />
                     </TextBlock>
-                    <TextBlock Text="CACHE FOLDER OVERRIDE (BLANK = DEFAULT; APPLIES AFTER RESTART)"
-                               Style="{StaticResource FieldLabelStyle}" />
+                    <TextBlock Text="CACHE FOLDER" Style="{StaticResource FieldLabelStyle}"
+                               ToolTip="Blank = default location. Applies after restart." />
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

@@ -133,7 +133,7 @@ public partial class GenerateViewModel : ObservableObject
     public string NegativePromptHint =>
         IsNegativePromptEnabled
             ? string.Empty
-            : "Base FLUX ignores the negative prompt unless CFG > 1 (which roughly doubles time).";
+            : "Needs CFG > 1 — base FLUX ignores it otherwise.";
 
     partial void OnSelectedModelChanged(ModelSpec? value)
     {
