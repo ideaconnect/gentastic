@@ -76,20 +76,33 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
 
             _model = await Task.Run(() =>
             {
-                var parameter = DiffusionModelParameter.Create()
-                    .WithDiffusionModelPath(paths[ModelFileRole.DiffusionModel])
-                    .WithVae(paths[ModelFileRole.Vae])
-                    .WithVaeTiling()               // tiled VAE decode — guards the Strix Halo VAE OOM
-                    .WithDiffusionFlashAttention() // perf-neutral here, but keeps attention memory bounded
-                    .WithMultithreading();
+                DiffusionModelParameter parameter;
+                if (model.Spec.Kind == ModelKind.Sdxl)
+                {
+                    // SDXL loads from a single all-in-one checkpoint (UNet + CLIP-L/G + VAE baked in),
+                    // so there are no separate diffusion/encoder/VAE files to wire.
+                    parameter = DiffusionModelParameter.Create()
+                        .WithModelPath(paths[ModelFileRole.Checkpoint])
+                        .WithVaeTiling()
+                        .WithMultithreading();
+                }
+                else
+                {
+                    // FLUX family: a separate diffusion transformer + VAE, plus text encoders that
+                    // differ by architecture — FLUX.1 uses CLIP-L + T5-XXL; FLUX.2 klein uses a single
+                    // Qwen3 LLM encoder. sd.cpp auto-detects the transformer architecture from the model.
+                    parameter = DiffusionModelParameter.Create()
+                        .WithDiffusionModelPath(paths[ModelFileRole.DiffusionModel])
+                        .WithVae(paths[ModelFileRole.Vae])
+                        .WithVaeTiling()               // tiled VAE decode — guards the Strix Halo VAE OOM
+                        .WithDiffusionFlashAttention() // perf-neutral here, but keeps attention memory bounded
+                        .WithMultithreading();
 
-                // Text encoders differ by architecture: FLUX.1 uses CLIP-L + T5-XXL; FLUX.2 klein
-                // uses a single Qwen3 LLM encoder. sd.cpp auto-detects the transformer architecture
-                // from the diffusion model itself, so only the encoder wiring changes here.
-                parameter = model.Spec.Kind == ModelKind.Flux2Klein
-                    ? parameter.WithLLMPath(paths[ModelFileRole.TextEncoderLlm])
-                    : parameter.WithClipLPath(paths[ModelFileRole.TextEncoderClip])
-                               .WithT5xxlPath(paths[ModelFileRole.TextEncoderT5]);
+                    parameter = model.Spec.Kind == ModelKind.Flux2Klein
+                        ? parameter.WithLLMPath(paths[ModelFileRole.TextEncoderLlm])
+                        : parameter.WithClipLPath(paths[ModelFileRole.TextEncoderClip])
+                                   .WithT5xxlPath(paths[ModelFileRole.TextEncoderT5]);
+                }
 
                 // The AMD Vulkan driver caps a single GPU buffer at ~2 GB (maxStorageBufferRange),
                 // but FLUX VAE decode at 1024² needs one ~8 GB compute buffer. It fails with
@@ -142,7 +155,7 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
             return await Task.Run(() =>
             {
                 ct.ThrowIfCancellationRequested();
-                var parameter = BuildParameter(request);
+                var parameter = BuildParameter(request, LoadedModel!.Spec.Kind);
                 Image<ColorRGB>? result = _model!.GenerateImage(parameter);
                 if (result is null)
                     throw new InvalidOperationException("The engine returned no image.");
@@ -157,10 +170,13 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
         }
     }
 
-    private static ImageGenerationParameter BuildParameter(GenerationRequest request)
+    private static ImageGenerationParameter BuildParameter(GenerationRequest request, ModelKind kind)
     {
-        var parameter = ImageGenerationParameter.TextToImage(request.Prompt)
-            .WithFluxDefaults()
+        var typed = ImageGenerationParameter.TextToImage(request.Prompt);
+        // SDXL and FLUX need different pipeline defaults (guidance/flow, prediction type, etc.).
+        typed = kind == ModelKind.Sdxl ? typed.WithSDXLDefaults() : typed.WithFluxDefaults();
+
+        var parameter = typed
             .WithNegativePrompt(request.NegativePrompt ?? string.Empty)
             .WithSize(request.Width, request.Height)
             .WithSteps(request.Steps)

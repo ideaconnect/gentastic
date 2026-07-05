@@ -50,6 +50,10 @@ public sealed class ModelCatalog : IModelCatalog
     private static readonly ModelLicense Flux2KleinUncensoredLicense =
         new("FLUX.2 [klein] + community uncensored encoder", Gated: true,
             "https://huggingface.co/Cordux/flux2-klein-4B-uncensored-text-encoder");
+    // Illustrious XL — a single-file SDXL anime checkpoint (UNet + CLIP-L/G + VAE baked in), ungated.
+    private static readonly ModelLicense IllustriousLicense =
+        new("Illustrious-XL · Fair AI Public License 1.0-SD", Gated: false,
+            "https://huggingface.co/OnomaAIResearch/Illustrious-xl-early-release-v0");
 
     private readonly IReadOnlyList<ModelSpec> _models =
     [
@@ -89,9 +93,23 @@ public sealed class ModelCatalog : IModelCatalog
             DefaultSteps: 4,
             DefaultCfg: 1.0f,
             IsAdult: true),
-        // Anime: a FLUX.1-dev anime finetune (standard FLUX.1 companions, no engine change). Dedicated
-        // FLUX.2 anime NSFW finetunes don't exist yet; SDXL (Pony/Illustrious) remains the anime
-        // gold standard if stronger anime is needed.
+        // Anime (dedicated, capable): Illustrious XL — the SDXL anime gold standard, danbooru-trained.
+        // Single ungated checkpoint; SDXL isn't guidance-distilled, so negative prompts work normally.
+        new ModelSpec(
+            Id: "illustrious-xl",
+            DisplayName: "Illustrious XL — Anime (SDXL)",
+            Kind: ModelKind.Sdxl,
+            Quantization: Quantization.F16,
+            Files:
+            [
+                new ModelFile(ModelFileRole.Checkpoint, "OnomaAIResearch/Illustrious-xl-early-release-v0",
+                    "Illustrious-XL-v0.1.safetensors"),
+            ],
+            License: IllustriousLicense,
+            DefaultSteps: 28,
+            DefaultCfg: 6.0f,
+            IsAdult: true),
+        // Anime (lightweight): a FLUX.1-dev anime finetune (standard FLUX.1 companions, no engine change).
         Flux("flux1-modern-anime", "FLUX.1 Modern Anime (uncensored)", ModelKind.FluxDev, Quantization.Q4_0,
             "alfredplpl/flux.1-dev-modern-anime-gguf", "modern-anime_Q4_0.gguf", AnimeFinetuneLicense,
             steps: 20, isAdult: true),

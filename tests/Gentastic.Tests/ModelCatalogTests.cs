@@ -24,6 +24,14 @@ public class ModelCatalogTests
         foreach (var model in _catalog.GetAvailableModels())
         {
             var roles = model.Files.Select(f => f.Role).ToHashSet();
+
+            if (model.Kind == ModelKind.Sdxl)
+            {
+                // SDXL is a single all-in-one checkpoint — no separate diffusion/encoder/VAE files.
+                roles.ShouldContain(ModelFileRole.Checkpoint);
+                continue;
+            }
+
             roles.ShouldContain(ModelFileRole.DiffusionModel);
             roles.ShouldContain(ModelFileRole.Vae);
 

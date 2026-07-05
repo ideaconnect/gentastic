@@ -8,6 +8,9 @@ public enum ModelKind
     /// <summary>FLUX.2 klein — a distilled FLUX.2 variant. Uses a Qwen3 LLM text encoder (not
     /// CLIP-L + T5) and the FLUX.2 VAE.</summary>
     Flux2Klein,
+    /// <summary>Stable Diffusion XL (incl. Illustrious/Pony/NoobAI anime finetunes). Loads from a
+    /// single all-in-one checkpoint; not guidance-distilled, so negative prompts work with normal CFG.</summary>
+    Sdxl,
 }
 
 /// <summary>GGUF quantization level for the diffusion transformer. Lower = smaller + faster,
@@ -32,6 +35,7 @@ public enum ModelFileRole
     TextEncoderT5,    // T5-XXL
     Vae,              // autoencoder
     TextEncoderLlm,   // LLM text encoder (Qwen3 for FLUX.2 klein)
+    Checkpoint,       // single all-in-one checkpoint (SDXL: UNet + CLIP-L/G + VAE)
 }
 
 /// <summary>A single downloadable file that belongs to a model, addressed on the Hugging Face hub.</summary>
