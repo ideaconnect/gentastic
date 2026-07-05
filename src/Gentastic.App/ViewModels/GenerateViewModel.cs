@@ -370,7 +370,12 @@ public partial class GenerateViewModel : ObservableObject
     {
         Directory.CreateDirectory(OutputDirectory);
         var seed = request.Seed < 0 ? "rnd" : request.Seed.ToString(CultureInfo.InvariantCulture);
-        var path = Path.Combine(OutputDirectory, $"gentastic_{DateTime.Now:yyyyMMdd_HHmmss}_{seed}.png");
+        // Ensure a unique name: a batch with a random seed produces several "…_rnd" files that can
+        // land in the same second, which would otherwise overwrite each other.
+        var basePath = Path.Combine(OutputDirectory, $"gentastic_{DateTime.Now:yyyyMMdd_HHmmss}_{seed}");
+        var path = basePath + ".png";
+        for (var n = 2; File.Exists(path); n++)
+            path = $"{basePath}_{n}.png";
 
         var metadata = new List<(string, string)>
         {

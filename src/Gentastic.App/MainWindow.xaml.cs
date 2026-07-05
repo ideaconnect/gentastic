@@ -30,7 +30,7 @@ public partial class MainWindow : FluentWindow
             ContentRendered += OnContentRenderedCapture;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         var start = Environment.GetEnvironmentVariable("GENTASTIC_SHOT_PAGE") switch
         {
@@ -40,6 +40,31 @@ public partial class MainWindow : FluentWindow
             _ => NavGenerate,
         };
         start.IsChecked = true; // triggers navigation
+
+        // Headless end-to-end test hook (env-gated): drive a real batch generation through the actual
+        // GenerateViewModel, write a result marker, and exit. Used to verify the batch flow.
+        if (Environment.GetEnvironmentVariable("GENTASTIC_AUTOGEN") == "1")
+            await RunAutoGenAsync();
+    }
+
+    private async System.Threading.Tasks.Task RunAutoGenAsync()
+    {
+        var vm = _services.GetRequiredService<GenerateViewModel>();
+        vm.Prompt = "a red apple on a wooden table";
+        vm.Seed = -1; // random per image — exercises the collision-safe output naming
+        vm.BatchCount = int.TryParse(Environment.GetEnvironmentVariable("GENTASTIC_AUTOGEN_COUNT"), out var c) ? c : 2;
+
+        // Smallest size for a fast test.
+        foreach (var size in vm.SizePresets)
+            if (size is { Width: 512, Height: 512 }) { vm.SelectedSize = size; break; }
+
+        await vm.GenerateCommand.ExecuteAsync(null);
+
+        var marker = Environment.GetEnvironmentVariable("GENTASTIC_AUTOGEN_MARKER");
+        if (!string.IsNullOrWhiteSpace(marker))
+            File.WriteAllText(marker, $"count={vm.BatchCount}\nstatus={vm.StatusMessage}\nlastOutput={vm.LastOutputPath}\n");
+
+        Application.Current.Shutdown();
     }
 
     private void OnNavChecked(object sender, RoutedEventArgs e)

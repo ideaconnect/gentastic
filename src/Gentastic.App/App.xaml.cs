@@ -46,9 +46,10 @@ public partial class App : Application
         }
 
         // First run: let the user confirm the auto-detected compute runtime (CUDA → ROCm → Vulkan →
-        // CPU). Skipped once confirmed, and during a MainWindow screenshot run (it would block capture).
-        if (!settings.Current.RuntimeConfirmed
-            && Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") != "1")
+        // CPU). Skipped once confirmed, and during headless screenshot/auto-gen runs (it would block).
+        var headless = Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") == "1"
+                       || Environment.GetEnvironmentVariable("GENTASTIC_AUTOGEN") == "1";
+        if (!settings.Current.RuntimeConfirmed && !headless)
         {
             _host.Services.GetRequiredService<RuntimeDialog>().ShowDialog();
         }
