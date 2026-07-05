@@ -78,12 +78,18 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
             {
                 var parameter = DiffusionModelParameter.Create()
                     .WithDiffusionModelPath(paths[ModelFileRole.DiffusionModel])
-                    .WithClipLPath(paths[ModelFileRole.TextEncoderClip])
-                    .WithT5xxlPath(paths[ModelFileRole.TextEncoderT5])
                     .WithVae(paths[ModelFileRole.Vae])
                     .WithVaeTiling()               // tiled VAE decode — guards the Strix Halo VAE OOM
                     .WithDiffusionFlashAttention() // perf-neutral here, but keeps attention memory bounded
                     .WithMultithreading();
+
+                // Text encoders differ by architecture: FLUX.1 uses CLIP-L + T5-XXL; FLUX.2 klein
+                // uses a single Qwen3 LLM encoder. sd.cpp auto-detects the transformer architecture
+                // from the diffusion model itself, so only the encoder wiring changes here.
+                parameter = model.Spec.Kind == ModelKind.Flux2Klein
+                    ? parameter.WithLLMPath(paths[ModelFileRole.TextEncoderLlm])
+                    : parameter.WithClipLPath(paths[ModelFileRole.TextEncoderClip])
+                               .WithT5xxlPath(paths[ModelFileRole.TextEncoderT5]);
 
                 // The AMD Vulkan driver caps a single GPU buffer at ~2 GB (maxStorageBufferRange),
                 // but FLUX VAE decode at 1024² needs one ~8 GB compute buffer. It fails with

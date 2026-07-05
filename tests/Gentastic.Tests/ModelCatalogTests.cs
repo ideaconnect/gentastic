@@ -19,15 +19,27 @@ public class ModelCatalogTests
     }
 
     [Fact]
-    public void EveryModel_HasTheFourFluxFiles()
+    public void EveryModel_HasItsArchitectureCompanionFiles()
     {
         foreach (var model in _catalog.GetAvailableModels())
         {
             var roles = model.Files.Select(f => f.Role).ToHashSet();
             roles.ShouldContain(ModelFileRole.DiffusionModel);
-            roles.ShouldContain(ModelFileRole.TextEncoderClip);
-            roles.ShouldContain(ModelFileRole.TextEncoderT5);
             roles.ShouldContain(ModelFileRole.Vae);
+
+            if (model.Kind == ModelKind.Flux2Klein)
+            {
+                // FLUX.2 uses a single Qwen3 LLM encoder — no CLIP-L / T5.
+                roles.ShouldContain(ModelFileRole.TextEncoderLlm);
+                roles.ShouldNotContain(ModelFileRole.TextEncoderClip);
+                roles.ShouldNotContain(ModelFileRole.TextEncoderT5);
+            }
+            else
+            {
+                // FLUX.1 uses CLIP-L + T5-XXL.
+                roles.ShouldContain(ModelFileRole.TextEncoderClip);
+                roles.ShouldContain(ModelFileRole.TextEncoderT5);
+            }
         }
     }
 

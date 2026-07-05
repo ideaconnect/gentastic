@@ -5,6 +5,9 @@ public enum ModelKind
 {
     FluxSchnell,
     FluxDev,
+    /// <summary>FLUX.2 klein — a distilled FLUX.2 variant. Uses a Qwen3 LLM text encoder (not
+    /// CLIP-L + T5) and the FLUX.2 VAE.</summary>
+    Flux2Klein,
 }
 
 /// <summary>GGUF quantization level for the diffusion transformer. Lower = smaller + faster,
@@ -28,6 +31,7 @@ public enum ModelFileRole
     TextEncoderClip,  // CLIP-L
     TextEncoderT5,    // T5-XXL
     Vae,              // autoencoder
+    TextEncoderLlm,   // LLM text encoder (Qwen3 for FLUX.2 klein)
 }
 
 /// <summary>A single downloadable file that belongs to a model, addressed on the Hugging Face hub.</summary>
@@ -57,7 +61,8 @@ public sealed record ModelSpec(
 {
     /// <summary>True when the diffusion transformer itself is guidance-distilled, so a real
     /// negative prompt only takes effect with CFG &gt; 1 (roughly 2x slower).</summary>
-    public bool IsGuidanceDistilled => Kind is ModelKind.FluxSchnell or ModelKind.FluxDev;
+    public bool IsGuidanceDistilled =>
+        Kind is ModelKind.FluxSchnell or ModelKind.FluxDev or ModelKind.Flux2Klein;
 }
 
 /// <summary>Local, on-disk result of installing a <see cref="ModelSpec"/>.</summary>

@@ -31,6 +31,15 @@ public sealed class ModelCatalog : IModelCatalog
         new("FLUX.1 [dev] finetune · Non-Commercial", Gated: false,
             "https://huggingface.co/alfredplpl/flux.1-dev-modern-anime-gguf");
 
+    // FLUX.2 klein companions (all ungated re-hosts): a Qwen3-4B LLM text encoder (replaces the
+    // CLIP-L + T5 pair) and the FLUX.2 VAE.
+    private static readonly ModelFile Qwen3Encoder =
+        new(ModelFileRole.TextEncoderLlm, "unsloth/Qwen3-4B-GGUF", "Qwen3-4B-Q4_K_M.gguf");
+    private static readonly ModelFile Flux2Vae =
+        new(ModelFileRole.Vae, "Comfy-Org/flux2-dev", "split_files/vae/flux2-vae.safetensors");
+    private static readonly ModelLicense Flux2KleinLicense =
+        new("FLUX.2 [klein]", Gated: false, "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B");
+
     private readonly IReadOnlyList<ModelSpec> _models =
     [
         Flux("flux1-schnell", "FLUX.1 schnell", ModelKind.FluxSchnell, Quantization.Q4_K_S,
@@ -41,6 +50,24 @@ public sealed class ModelCatalog : IModelCatalog
             "city96/FLUX.1-dev-gguf", "flux1-dev-Q4_K_S.gguf", DevLicense, steps: 20),
         Flux("flux1-dev-q8", "FLUX.1 dev (Q8)", ModelKind.FluxDev, Quantization.Q8_0,
             "city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", DevLicense, steps: 20),
+
+        // FLUX.2 klein 4B (experimental) — a newer, distilled FLUX.2 variant. Smaller than FLUX.1
+        // (4B transformer + 4B Qwen3 encoder vs FLUX.1's 12B + 9 GB T5), ~5 GB total. Uses the LLM
+        // encoder path in the engine, not CLIP-L + T5.
+        new ModelSpec(
+            Id: "flux2-klein-4b",
+            DisplayName: "FLUX.2 klein 4B (experimental)",
+            Kind: ModelKind.Flux2Klein,
+            Quantization: Quantization.Q4_0,
+            Files:
+            [
+                new ModelFile(ModelFileRole.DiffusionModel, "leejet/FLUX.2-klein-4B-GGUF", "flux-2-klein-4b-Q4_0.gguf"),
+                Qwen3Encoder,
+                Flux2Vae,
+            ],
+            License: Flux2KleinLicense,
+            DefaultSteps: 4,
+            DefaultCfg: 1.0f),
 
         // Adult-capable FLUX.1-dev finetunes (hidden unless ShowAdultModels is enabled). Standard
         // FLUX architecture — same CLIP-L / T5 / VAE companions, so no engine changes needed.
