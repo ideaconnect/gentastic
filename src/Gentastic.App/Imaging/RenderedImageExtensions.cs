@@ -44,6 +44,18 @@ public static class RenderedImageExtensions
 
     public static ImageSource ToImageSource(this RenderedImage image) => image.ToBitmapSource();
 
+    /// <summary>Decodes an image file (any WPF-supported format) into a packed RGB
+    /// <see cref="RenderedImage"/> for use as an image-to-image init image.</summary>
+    public static RenderedImage LoadRenderedImage(string path)
+    {
+        var frame = BitmapFrame.Create(new Uri(path, UriKind.Absolute), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+        var rgb = new FormatConvertedBitmap(frame, PixelFormats.Rgb24, null, 0);
+        var stride = rgb.PixelWidth * 3;
+        var pixels = new byte[stride * rgb.PixelHeight];
+        rgb.CopyPixels(pixels, stride, 0);
+        return new RenderedImage(pixels, rgb.PixelWidth, rgb.PixelHeight, Channels: 3);
+    }
+
     /// <summary>Encodes the image as PNG, embedding the given key/value pairs as iTXt metadata.</summary>
     public static void SavePng(
         this RenderedImage image, string path,

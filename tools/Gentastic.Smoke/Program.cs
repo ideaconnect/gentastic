@@ -76,6 +76,30 @@ Console.WriteLine($"Generated {image.Width}x{image.Height} in {sw.Elapsed.TotalS
 SavePng(image, outputPath);
 Console.WriteLine($"Saved {outputPath}");
 
+// Optional image-to-image pass (#22/#24): reuse the result as the init image.
+if (Environment.GetEnvironmentVariable("GENTASTIC_I2I") == "1")
+{
+    var i2iRequest = new ImageToImageRequest
+    {
+        Prompt = "the same apple resting on fresh snow, cold winter light",
+        InitImage = image,
+        DenoiseStrength = 0.6f,
+        Width = 512,
+        Height = 512,
+        Steps = 4,
+        Seed = 7,
+        Cfg = 1.0f,
+        Sampler = Sampler.Euler,
+    };
+    var i2iImage = await service.RunAsync(
+        i2iRequest, spec, new Progress<GenerationStatus>(s => Console.WriteLine($"  i2i [{s.Stage}] {s.Message}")));
+    var i2iPath = Path.Combine(
+        Path.GetDirectoryName(outputPath) ?? ".",
+        Path.GetFileNameWithoutExtension(outputPath) + "-i2i.png");
+    SavePng(i2iImage, i2iPath);
+    Console.WriteLine($"i2i saved {i2iPath} ({i2iImage.Pixels.Distinct().Count()} distinct values).");
+}
+
 // A real image has plenty of tonal variety; near-uniform output signals a broken pipeline.
 return distinct < 16 ? 4 : 0;
 

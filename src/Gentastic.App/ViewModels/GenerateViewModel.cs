@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Gentastic.App.Imaging;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
+using Microsoft.Win32;
 
 namespace Gentastic.App.ViewModels;
 
@@ -65,6 +66,48 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = "Ready.";
     [ObservableProperty] private string? _lastOutputPath;
 
+    // Image-to-image.
+    [ObservableProperty] private bool _useInputImage;
+    [ObservableProperty] private RenderedImage? _initImage;
+    [ObservableProperty] private ImageSource? _initImagePreview;
+    [ObservableProperty] private double _denoiseStrength = 0.6;
+
+    /// <summary>Loads an input image for image-to-image (from Browse or drag &amp; drop).</summary>
+    public void LoadInitImage(string path)
+    {
+        try
+        {
+            var loaded = RenderedImageExtensions.LoadRenderedImage(path);
+            InitImage = loaded;
+            InitImagePreview = loaded.ToImageSource();
+            UseInputImage = true;
+            StatusMessage = $"Input image loaded ({loaded.Width}×{loaded.Height}).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Couldn't load image: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void BrowseInitImage()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Images|*.png;*.jpg;*.jpeg;*.bmp;*.webp|All files|*.*",
+        };
+        if (dialog.ShowDialog() == true)
+            LoadInitImage(dialog.FileName);
+    }
+
+    [RelayCommand]
+    private void ClearInitImage()
+    {
+        InitImage = null;
+        InitImagePreview = null;
+        UseInputImage = false;
+    }
+
     /// <summary>Guidance-distilled FLUX only honours a negative prompt when CFG &gt; 1, so the input
     /// is gated: disabled (with an explanatory hint) until CFG is raised above 1.</summary>
     public bool IsNegativePromptEnabled =>
@@ -115,9 +158,13 @@ public partial class GenerateViewModel : ObservableObject
 
             if (!_engine.IsAvailable)
             {
-                StatusMessage =
-                    $"Runtime ready — {hardware.Summary}. Generation lands in milestone M1 " +
-                    "(the inference engine); the prompt, model and download flow are already wired.";
+                StatusMessage = $"No inference backend available ({hardware.Summary}).";
+                return;
+            }
+
+            if (UseInputImage && InitImage is null)
+            {
+                StatusMessage = "Add an input image, or turn off image-to-image.";
                 return;
             }
 
@@ -138,17 +185,37 @@ public partial class GenerateViewModel : ObservableObject
         }
     }
 
-    private TextToImageRequest BuildRequest() => new()
+    private GenerationRequest BuildRequest()
     {
-        Prompt = Prompt,
-        NegativePrompt = string.IsNullOrWhiteSpace(NegativePrompt) ? null : NegativePrompt,
-        Width = SelectedSize.Width,
-        Height = SelectedSize.Height,
-        Steps = Steps,
-        Seed = Seed,
-        Cfg = (float)Cfg,
-        Sampler = SelectedSampler,
-    };
+        var negative = string.IsNullOrWhiteSpace(NegativePrompt) ? null : NegativePrompt;
+
+        if (UseInputImage && InitImage is not null)
+            return new ImageToImageRequest
+            {
+                Prompt = Prompt,
+                NegativePrompt = negative,
+                Width = SelectedSize.Width,
+                Height = SelectedSize.Height,
+                Steps = Steps,
+                Seed = Seed,
+                Cfg = (float)Cfg,
+                Sampler = SelectedSampler,
+                InitImage = InitImage,
+                DenoiseStrength = (float)DenoiseStrength,
+            };
+
+        return new TextToImageRequest
+        {
+            Prompt = Prompt,
+            NegativePrompt = negative,
+            Width = SelectedSize.Width,
+            Height = SelectedSize.Height,
+            Steps = Steps,
+            Seed = Seed,
+            Cfg = (float)Cfg,
+            Sampler = SelectedSampler,
+        };
+    }
 
     public static string OutputDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Gentastic");
@@ -171,6 +238,12 @@ public partial class GenerateViewModel : ObservableObject
             ("sampler", request.Sampler.ToString()),
             ("size", $"{request.Width}x{request.Height}"),
         };
+
+        if (request is ImageToImageRequest i2i)
+        {
+            metadata.Add(("mode", "img2img"));
+            metadata.Add(("denoise_strength", i2i.DenoiseStrength.ToString(CultureInfo.InvariantCulture)));
+        }
 
         image.SavePng(path, metadata);
         return path;
