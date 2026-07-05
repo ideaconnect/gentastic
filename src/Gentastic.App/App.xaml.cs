@@ -108,9 +108,10 @@ internal static class HostBuilderExtensions
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainWindowViewModel>();
 
-        // First-run runtime-detection dialog (transient — shown once at startup).
+        // Runtime-detection dialog (transient — shown at first run and re-openable from Settings).
         services.AddTransient<RuntimeDialog>();
         services.AddTransient<RuntimeDialogViewModel>();
+        services.AddTransient<Func<RuntimeDialog>>(sp => sp.GetRequiredService<RuntimeDialog>);
 
         // Pages + view models.
         services.AddSingleton<GeneratePage>();

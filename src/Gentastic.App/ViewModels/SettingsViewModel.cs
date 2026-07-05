@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gentastic.App;
+using Gentastic.App.Views;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Settings;
 using Microsoft.Win32;
@@ -19,19 +21,22 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IDiffusionEngine _engine;
     private readonly ISettingsService _settings;
     private readonly IUpdateService _updateService;
+    private readonly Func<RuntimeDialog> _runtimeDialogFactory;
 
     public SettingsViewModel(
         IRuntimeDetector detector,
         IModelRepository repository,
         IDiffusionEngine engine,
         ISettingsService settings,
-        IUpdateService updateService)
+        IUpdateService updateService,
+        Func<RuntimeDialog> runtimeDialogFactory)
     {
         _detector = detector;
         _repository = repository;
         _engine = engine;
         _settings = settings;
         _updateService = updateService;
+        _runtimeDialogFactory = runtimeDialogFactory;
 
         _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
         _preferredBackend = settings.Current.PreferredBackend;
@@ -40,7 +45,9 @@ public partial class SettingsViewModel : ObservableObject
         Refresh();
     }
 
-    public ObservableCollection<string> Adapters { get; } = [];
+    /// <summary>Per-backend probe results (CUDA → ROCm → Vulkan → CPU), the same view shown in the
+    /// first-run runtime dialog.</summary>
+    public ObservableCollection<RuntimeOption> Probes { get; } = [];
 
     public IReadOnlyList<BackendPreference> BackendOptions { get; } = Enum.GetValues<BackendPreference>();
 
@@ -88,11 +95,9 @@ public partial class SettingsViewModel : ObservableObject
         var hardware = _detector.Detect();
         HardwareSummary = hardware.Summary;
 
-        Adapters.Clear();
-        if (hardware.Adapters.Count == 0)
-            Adapters.Add("No hardware GPU detected — CPU fallback.");
-        foreach (var adapter in hardware.Adapters)
-            Adapters.Add($"{adapter.Name} — {adapter.Vendor}, {adapter.TotalMemoryGiB:F1} GiB total");
+        Probes.Clear();
+        foreach (var row in RuntimeDialogViewModel.BackendRows(hardware))
+            Probes.Add(row);
 
         BackendStatus = _engine.IsAvailable
             ? $"Active backend: {_engine.Backend}"
@@ -106,6 +111,19 @@ public partial class SettingsViewModel : ObservableObject
         TokenStatus = hasToken
             ? "Hugging Face token set — gated models such as FLUX.1-dev can download."
             : "No Hugging Face token — required for gated models such as FLUX.1-dev.";
+    }
+
+    [RelayCommand]
+    private void ReDetectRuntime()
+    {
+        var dialog = _runtimeDialogFactory();
+        dialog.Owner = Application.Current.MainWindow;
+        dialog.ShowDialog();
+
+        // Reflect whatever the dialog persisted so the dropdown and status stay in sync.
+        PreferredBackend = _settings.Current.PreferredBackend;
+        Refresh();
+        SaveStatus = "Runtime updated. Backend changes take effect after restart.";
     }
 
     [RelayCommand]

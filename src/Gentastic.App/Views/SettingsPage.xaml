@@ -21,18 +21,40 @@
                     <TextBlock Text="{Binding HardwareSummary}" />
                     <TextBlock Text="{Binding BackendStatus}" Margin="0,4,0,12"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="PREFERRED BACKEND" Style="{StaticResource FieldLabelStyle}" />
-                    <ComboBox ItemsSource="{Binding BackendOptions}" SelectedItem="{Binding PreferredBackend}"
-                              HorizontalAlignment="Left" MinWidth="190" Margin="0,0,0,12" />
-                    <TextBlock Text="DETECTED ADAPTERS" Style="{StaticResource FieldLabelStyle}" />
-                    <ItemsControl ItemsSource="{Binding Adapters}">
+
+                    <TextBlock Text="RUNTIME BACKENDS" Style="{StaticResource FieldLabelStyle}" />
+                    <ItemsControl ItemsSource="{Binding Probes}" Margin="0,0,0,12">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" Margin="0,2,0,0"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <Grid Margin="0,0,0,9">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <fa:IconBlock Grid.Column="0" Icon="{Binding Icon}" FontSize="15" Width="22"
+                                                  VerticalAlignment="Center" Foreground="{Binding IconBrush}" />
+                                    <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5" />
+                                        <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" FontSize="12" Margin="0,1,0,0"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <TextBlock Text="PREFERRED BACKEND" Style="{StaticResource FieldLabelStyle}" />
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox ItemsSource="{Binding BackendOptions}" SelectedItem="{Binding PreferredBackend}"
+                                  MinWidth="190" VerticalAlignment="Center" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Margin="10,0,0,0"
+                                Command="{Binding ReDetectRuntimeCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="MagnifyingGlass" FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="Re-detect…" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </ui:Card>
 

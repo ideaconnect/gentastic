@@ -54,19 +54,24 @@ public partial class RuntimeDialogViewModel : ObservableObject
             IsSelectable = true,
         });
 
-        foreach (var probe in profile.BackendProbes)
-            Options.Add(new RuntimeOption
-            {
-                Title = BackendName(probe.Backend),
-                Detail = probe.Detail,
-                Preference = ToPreference(probe.Backend),
-                Icon = StatusIcon(probe.Availability),
-                IconBrush = StatusBrush(probe.Availability),
-                IsSelectable = probe.IsReady,
-            });
+        foreach (var row in BackendRows(profile))
+            Options.Add(row);
 
         SelectedOption = Options[0];
     }
+
+    /// <summary>Builds one <see cref="RuntimeOption"/> per backend from a probe result (no "Automatic"
+    /// row). Shared by the startup dialog and the Settings runtime panel so both stay consistent.</summary>
+    public static IReadOnlyList<RuntimeOption> BackendRows(HardwareProfile profile) =>
+        [.. profile.BackendProbes.Select(probe => new RuntimeOption
+        {
+            Title = BackendName(probe.Backend),
+            Detail = probe.Detail,
+            Preference = ToPreference(probe.Backend),
+            Icon = StatusIcon(probe.Availability),
+            IconBrush = StatusBrush(probe.Availability),
+            IsSelectable = probe.IsReady,
+        })];
 
     public string HardwareSummary { get; }
 
