@@ -45,8 +45,10 @@ public sealed class ModelCatalog : IModelCatalog
         new(ModelFileRole.DiffusionModel, "leejet/FLUX.2-klein-4B-GGUF", "flux-2-klein-4b-Q4_0.gguf");
     private static readonly ModelLicense Flux2KleinLicense =
         new("FLUX.2 [klein]", Gated: false, "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B");
+    // The ablated encoder repo is age-gated on HF (verified: 401 without a token), so this needs the
+    // user to accept the Cordux license and set a Hugging Face token — same flow as FLUX.1-dev.
     private static readonly ModelLicense Flux2KleinUncensoredLicense =
-        new("FLUX.2 [klein] + community uncensored encoder", Gated: false,
+        new("FLUX.2 [klein] + community uncensored encoder", Gated: true,
             "https://huggingface.co/Cordux/flux2-klein-4B-uncensored-text-encoder");
 
     private readonly IReadOnlyList<ModelSpec> _models =
@@ -75,7 +77,8 @@ public sealed class ModelCatalog : IModelCatalog
 
         // Adult models (hidden unless ShowAdultModels is enabled).
         // Realistic/general: stock FLUX.2 klein diffusion + the ablated Qwen3 encoder — fast (~18s),
-        // strong at photorealism, and handles anime via prompting. Reuses the klein engine path.
+        // strong at photorealism, and handles anime via prompting. Reuses the klein engine path; the
+        // ablated encoder is HF-gated, so a Hugging Face token is required (see the license).
         new ModelSpec(
             Id: "flux2-klein-uncensored",
             DisplayName: "FLUX.2 klein — Uncensored (fast, realistic)",
