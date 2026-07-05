@@ -82,7 +82,7 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
                     .WithT5xxlPath(paths[ModelFileRole.TextEncoderT5])
                     .WithVae(paths[ModelFileRole.Vae])
                     .WithVaeTiling()               // tiled VAE decode — guards the Strix Halo VAE OOM
-                    .WithDiffusionFlashAttention()
+                    .WithDiffusionFlashAttention() // perf-neutral here, but keeps attention memory bounded
                     .WithMultithreading();
 
                 // The AMD Vulkan driver caps a single GPU buffer at ~2 GB (maxStorageBufferRange),

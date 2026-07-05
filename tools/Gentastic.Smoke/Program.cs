@@ -81,8 +81,14 @@ var request = new TextToImageRequest
 Console.WriteLine($"Request: {request.Width}x{request.Height}, {request.Steps} steps, cfg {request.Cfg}.");
 
 var sw = Stopwatch.StartNew();
+var lastTick = TimeSpan.Zero;
 var image = await service.RunAsync(
-    request, spec, new Progress<GenerationStatus>(s => Console.WriteLine($"  [{s.Stage}] {s.Message}")));
+    request, spec, new Progress<GenerationStatus>(s =>
+    {
+        var now = sw.Elapsed;
+        Console.WriteLine($"  [{now.TotalSeconds,6:F1}s (+{(now - lastTick).TotalSeconds,5:F1})] [{s.Stage}] {s.Message}");
+        lastTick = now;
+    }));
 
 var distinct = image.Pixels.Distinct().Count();
 Console.WriteLine($"Generated {image.Width}x{image.Height} in {sw.Elapsed.TotalSeconds:F1}s on {engine.Backend} "
