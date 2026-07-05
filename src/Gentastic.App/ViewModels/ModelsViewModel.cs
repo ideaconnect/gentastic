@@ -34,11 +34,13 @@ public partial class ModelsViewModel : ObservableObject
 {
     private readonly IModelCatalog _catalog;
     private readonly IModelRepository _repository;
+    private readonly ISettingsService _settings;
 
-    public ModelsViewModel(IModelCatalog catalog, IModelRepository repository)
+    public ModelsViewModel(IModelCatalog catalog, IModelRepository repository, ISettingsService settings)
     {
         _catalog = catalog;
         _repository = repository;
+        _settings = settings;
         Refresh();
     }
 
@@ -51,7 +53,11 @@ public partial class ModelsViewModel : ObservableObject
     {
         Models.Clear();
         foreach (var spec in _catalog.GetAvailableModels())
+        {
+            if (spec.IsAdult && !_settings.Current.ShowAdultModels)
+                continue;
             Models.Add(new ModelRowViewModel(spec, _repository.IsInstalled(spec)));
+        }
 
         StatusMessage = $"Cache: {_repository.CacheRoot} · {FormatBytes(_repository.GetCacheSizeBytes())} on disk";
     }

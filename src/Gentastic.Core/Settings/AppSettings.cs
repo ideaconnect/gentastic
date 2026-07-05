@@ -41,4 +41,8 @@ public sealed class AppSettings
     /// backend. Keeps that dialog to a first-run event rather than nagging on every launch; it can
     /// still be reopened from Settings.</summary>
     public bool RuntimeConfirmed { get; set; }
+
+    /// <summary>When false (default), models flagged adult are hidden from the model picker and
+    /// manager. Opt-in from Settings; applies on the next launch.</summary>
+    public bool ShowAdultModels { get; set; }
 }

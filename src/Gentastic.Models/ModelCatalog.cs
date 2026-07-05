@@ -25,6 +25,11 @@ public sealed class ModelCatalog : IModelCatalog
         new("Apache-2.0", Gated: false, "https://huggingface.co/black-forest-labs/FLUX.1-schnell");
     private static readonly ModelLicense DevLicense =
         new("FLUX.1 [dev] Non-Commercial License", Gated: true, "https://huggingface.co/black-forest-labs/FLUX.1-dev");
+    // Community FLUX.1-dev finetunes re-hosted ungated; they inherit the FLUX.1 [dev] non-commercial
+    // terms but download without a token and reuse the same CLIP-L / T5 / VAE companions.
+    private static readonly ModelLicense AnimeFinetuneLicense =
+        new("FLUX.1 [dev] finetune · Non-Commercial", Gated: false,
+            "https://huggingface.co/alfredplpl/flux.1-dev-modern-anime-gguf");
 
     private readonly IReadOnlyList<ModelSpec> _models =
     [
@@ -36,6 +41,12 @@ public sealed class ModelCatalog : IModelCatalog
             "city96/FLUX.1-dev-gguf", "flux1-dev-Q4_K_S.gguf", DevLicense, steps: 20),
         Flux("flux1-dev-q8", "FLUX.1 dev (Q8)", ModelKind.FluxDev, Quantization.Q8_0,
             "city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", DevLicense, steps: 20),
+
+        // Adult-capable FLUX.1-dev finetunes (hidden unless ShowAdultModels is enabled). Standard
+        // FLUX architecture — same CLIP-L / T5 / VAE companions, so no engine changes needed.
+        Flux("flux1-modern-anime", "FLUX.1 Modern Anime (uncensored)", ModelKind.FluxDev, Quantization.Q4_0,
+            "alfredplpl/flux.1-dev-modern-anime-gguf", "modern-anime_Q4_0.gguf", AnimeFinetuneLicense,
+            steps: 20, isAdult: true),
     ];
 
     public IReadOnlyList<ModelSpec> GetAvailableModels() => _models;
@@ -45,7 +56,8 @@ public sealed class ModelCatalog : IModelCatalog
 
     private static ModelSpec Flux(
         string id, string name, ModelKind kind, Quantization quant,
-        string transformerRepo, string transformerPath, ModelLicense license, int steps) =>
+        string transformerRepo, string transformerPath, ModelLicense license, int steps,
+        bool isAdult = false) =>
         new(
             Id: id,
             DisplayName: name,
@@ -60,5 +72,6 @@ public sealed class ModelCatalog : IModelCatalog
             ],
             License: license,
             DefaultSteps: steps,
-            DefaultCfg: 1.0f);
+            DefaultCfg: 1.0f,
+            IsAdult: isAdult);
 }

@@ -52,7 +52,8 @@ public sealed record ModelSpec(
     int DefaultSteps,
     float DefaultCfg,
     int DefaultWidth = 1024,
-    int DefaultHeight = 1024)
+    int DefaultHeight = 1024,
+    bool IsAdult = false)
 {
     /// <summary>True when the diffusion transformer itself is guidance-distilled, so a real
     /// negative prompt only takes effect with CFG &gt; 1 (roughly 2x slower).</summary>

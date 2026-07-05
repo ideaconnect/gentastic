@@ -71,6 +71,18 @@
                 </StackPanel>
             </ui:Card>
 
+            <!-- Content -->
+            <ui:Card Padding="18" Margin="0,0,0,12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="ShieldHalved" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Content" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ui:ToggleSwitch Content="Show adult models (18+)" IsChecked="{Binding ShowAdultModels}"
+                                     ToolTip="Reveals adult-only models in the picker and manager. Applies after restart." />
+                </StackPanel>
+            </ui:Card>
+
             <!-- Model cache -->
             <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>

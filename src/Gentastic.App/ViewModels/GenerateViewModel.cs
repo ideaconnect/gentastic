@@ -32,14 +32,16 @@ public partial class GenerateViewModel : ObservableObject
         IRuntimeDetector detector,
         IGenerationService generationService,
         IDiffusionEngine engine,
-        IPresetStore presetStore)
+        IPresetStore presetStore,
+        ISettingsService settings)
     {
         _detector = detector;
         _generationService = generationService;
         _engine = engine;
         _presetStore = presetStore;
 
-        Models = new ObservableCollection<ModelSpec>(catalog.GetAvailableModels());
+        Models = new ObservableCollection<ModelSpec>(
+            catalog.GetAvailableModels().Where(m => !m.IsAdult || settings.Current.ShowAdultModels));
         _selectedModel = Models.FirstOrDefault();
         ApplyModelDefaults();
         LoadPresets();

@@ -32,15 +32,29 @@ public class ModelCatalogTests
     }
 
     [Fact]
-    public void DevModels_AreLicenseGated_SchnellIsNot()
+    public void SchnellIsNotGated_AndOfficialDevModelsAre()
     {
-        foreach (var model in _catalog.GetAvailableModels())
-        {
-            if (model.Kind == ModelKind.FluxDev)
-                model.License.Gated.ShouldBeTrue();
-            else
-                model.License.Gated.ShouldBeFalse();
-        }
+        var models = _catalog.GetAvailableModels();
+
+        // Schnell is Apache-2.0 — never gated.
+        foreach (var model in models.Where(m => m.Kind == ModelKind.FluxSchnell))
+            model.License.Gated.ShouldBeFalse();
+
+        // The official FLUX.1-dev base models need an HF token. (Community finetunes re-hosted
+        // ungated are a separate, non-gated case — see the adult finetune below.)
+        _catalog.FindById("flux1-dev")!.License.Gated.ShouldBeTrue();
+        _catalog.FindById("flux1-dev-q8")!.License.Gated.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AdultModels_AreFlagged_AndDefaultModelsAreNot()
+    {
+        var models = _catalog.GetAvailableModels();
+
+        // At least one adult model exists and is flagged; the core FLUX models are not.
+        models.ShouldContain(m => m.IsAdult);
+        _catalog.FindById("flux1-schnell")!.IsAdult.ShouldBeFalse();
+        _catalog.FindById("flux1-dev")!.IsAdult.ShouldBeFalse();
     }
 
     [Fact]
