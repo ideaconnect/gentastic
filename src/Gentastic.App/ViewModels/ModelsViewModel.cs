@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gentastic.Core.Abstractions;
@@ -22,6 +23,10 @@ public partial class ModelRowViewModel : ObservableObject
     public string Details =>
         $"{Spec.Kind} · {Spec.Quantization} · {Spec.DefaultSteps} steps · " +
         $"{Spec.License.Name}{(Spec.License.Gated ? " (gated)" : string.Empty)}";
+
+    /// <summary>True when the model requires accepting a license / requesting access on Hugging Face
+    /// (and a token) before it can download.</summary>
+    public bool IsGated => Spec.License.Gated && !string.IsNullOrWhiteSpace(Spec.License.Url);
 
     [ObservableProperty] private bool _isInstalled;
     [ObservableProperty] private string _status;
@@ -116,5 +121,24 @@ public partial class ModelsViewModel : ObservableObject
         _repository.Delete(row.Spec);
         row.IsInstalled = _repository.IsInstalled(row.Spec);
         row.Status = row.IsInstalled ? "Installed" : "Removed";
+    }
+
+    /// <summary>Opens the gated model's Hugging Face page in the default browser so the user can accept
+    /// its license / request access, then add a token in Settings and retry the download.</summary>
+    [RelayCommand]
+    private void OpenLicensePage(ModelRowViewModel? row)
+    {
+        var url = row?.Spec.License.Url;
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+        try
+        {
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            row!.Status = "Opened the model page — accept access, add a token in Settings, then download.";
+        }
+        catch (Exception ex)
+        {
+            row!.Status = $"Couldn't open the browser: {ex.Message}";
+        }
     }
 }

@@ -79,6 +79,16 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource SecondaryButtonStyle}" Padding="12,8" Margin="0,0,8,0"
+                                            Visibility="{Binding IsGated, Converter={StaticResource BoolToVis}}"
+                                            ToolTip="Open the model's page to accept its license / request access"
+                                            Command="{Binding DataContext.OpenLicensePageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <fa:IconBlock Icon="LockOpen" FontSize="12" VerticalAlignment="Center" />
+                                            <TextBlock Text="Get access" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"
                                             Command="{Binding DataContext.DownloadCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}">
