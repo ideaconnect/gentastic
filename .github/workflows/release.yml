@@ -17,16 +17,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Build portable zip (CPU + Vulkan)
+      - name: Build portable zip (universal — CPU + Vulkan + NVIDIA CUDA)
         run: powershell -ExecutionPolicy Bypass -File scripts/publish-portable.ps1
-
-      - name: Build portable zip (+ NVIDIA CUDA)
-        run: powershell -ExecutionPolicy Bypass -File scripts/publish-portable.ps1 -IncludeCuda
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/Gentastic-portable-win-x64.zip
-            dist/Gentastic-portable-win-x64-cuda.zip
+          files: dist/Gentastic-portable-win-x64.zip
           generate_release_notes: true
