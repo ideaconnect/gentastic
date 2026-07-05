@@ -2,6 +2,7 @@ using System.Windows;
 using Gentastic.App.ViewModels;
 using Gentastic.App.Views;
 using Gentastic.Core.Abstractions;
+using Gentastic.Core.Presets;
 using Gentastic.Core.Services;
 using Gentastic.Core.Settings;
 using Gentastic.Engine;
@@ -55,6 +56,7 @@ internal static class HostBuilderExtensions
 
         // Domain services.
         services.AddSingleton<ISettingsService, JsonSettingsService>();
+        services.AddSingleton<IPresetStore, JsonPresetStore>();
         services.AddSingleton<IRuntimeDetector, RuntimeDetector>();
         services.AddSingleton<IModelCatalog, ModelCatalog>();
         services.AddSingleton(sp =>

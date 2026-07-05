@@ -18,6 +18,28 @@
             <StackPanel>
                 <TextBlock Text="Text to image" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
 
+                <TextBlock Text="Preset" Margin="0,0,0,4" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                              DisplayMemberPath="Name" />
+                    <ui:Button Grid.Column="1" Content="Delete" Icon="{ui:SymbolIcon Delete24}" Margin="8,0,0,0"
+                               Command="{Binding DeletePresetCommand}" />
+                </Grid>
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Grid.Column="0" PlaceholderText="Name to save current settings…"
+                                Text="{Binding PresetName, UpdateSourceTrigger=PropertyChanged}" />
+                    <ui:Button Grid.Column="1" Content="Save preset" Icon="{ui:SymbolIcon Save24}" Margin="8,0,0,0"
+                               Command="{Binding SavePresetCommand}" />
+                </Grid>
+
                 <TextBlock Text="Prompt" Margin="0,0,0,4" />
                 <ui:TextBox PlaceholderText="Describe the image you want…"
                             Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"

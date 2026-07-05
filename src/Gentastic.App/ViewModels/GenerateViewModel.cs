@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Gentastic.App.Imaging;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
+using Gentastic.Core.Presets;
 using Microsoft.Win32;
 
 namespace Gentastic.App.ViewModels;
@@ -23,26 +24,30 @@ public partial class GenerateViewModel : ObservableObject
     private readonly IRuntimeDetector _detector;
     private readonly IGenerationService _generationService;
     private readonly IDiffusionEngine _engine;
+    private readonly IPresetStore _presetStore;
     private CancellationTokenSource? _cts;
 
     public GenerateViewModel(
         IModelCatalog catalog,
         IRuntimeDetector detector,
         IGenerationService generationService,
-        IDiffusionEngine engine)
+        IDiffusionEngine engine,
+        IPresetStore presetStore)
     {
         _detector = detector;
         _generationService = generationService;
         _engine = engine;
+        _presetStore = presetStore;
 
         Models = new ObservableCollection<ModelSpec>(catalog.GetAvailableModels());
         _selectedModel = Models.FirstOrDefault();
         ApplyModelDefaults();
+        LoadPresets();
     }
 
     public ObservableCollection<ModelSpec> Models { get; }
 
-    public IReadOnlyList<ImageSize> SizePresets { get; } =
+    public ObservableCollection<ImageSize> SizePresets { get; } =
     [
         new("Square · 1024×1024", 1024, 1024),
         new("Portrait · 768×1024", 768, 1024),
@@ -50,6 +55,8 @@ public partial class GenerateViewModel : ObservableObject
         new("Square · 512×512", 512, 512),
         new("Wide · 1280×720", 1280, 720),
     ];
+
+    public ObservableCollection<Preset> Presets { get; } = [];
 
     public IReadOnlyList<Sampler> Samplers { get; } = Enum.GetValues<Sampler>();
 
@@ -71,6 +78,10 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private double _progress;
     [ObservableProperty] private string _statusMessage = "Ready.";
     [ObservableProperty] private string? _lastOutputPath;
+
+    // Presets.
+    [ObservableProperty] private Preset? _selectedPreset;
+    [ObservableProperty] private string _presetName = string.Empty;
 
     // Image-to-image.
     [ObservableProperty] private bool _useInputImage;
@@ -192,7 +203,12 @@ public partial class GenerateViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Failed: {ex.Message}";
+            var outOfMemory = ex is OutOfMemoryException
+                              || ex.Message.Contains("memory", StringComparison.OrdinalIgnoreCase)
+                              || ex.Message.Contains("alloc", StringComparison.OrdinalIgnoreCase);
+            StatusMessage = outOfMemory
+                ? $"Ran out of memory: {ex.Message}. Try a smaller size, fewer steps, or a lower-quant model."
+                : $"Failed: {ex.Message}";
         }
         finally
         {
@@ -210,6 +226,91 @@ public partial class GenerateViewModel : ObservableObject
     {
         StatusMessage = "Cancelling…";
         _cts?.Cancel();
+    }
+
+    private void LoadPresets()
+    {
+        Presets.Clear();
+        foreach (var preset in _presetStore.Load())
+            Presets.Add(preset);
+    }
+
+    partial void OnSelectedPresetChanged(Preset? value)
+    {
+        if (value is not null)
+            ApplyPreset(value);
+    }
+
+    private void ApplyPreset(Preset preset)
+    {
+        Prompt = preset.Prompt;
+        NegativePrompt = preset.NegativePrompt ?? string.Empty;
+
+        if (preset.ModelId is not null)
+        {
+            var model = Models.FirstOrDefault(m => m.Id == preset.ModelId);
+            if (model is not null)
+                SelectedModel = model; // resets steps/cfg to model defaults — overridden below
+        }
+
+        var size = SizePresets.FirstOrDefault(s => s.Width == preset.Width && s.Height == preset.Height)
+                   ?? AddCustomSize(preset.Width, preset.Height);
+        SelectedSize = size;
+
+        Steps = preset.Steps;
+        Seed = preset.Seed;
+        Cfg = preset.Cfg;
+        SelectedSampler = preset.Sampler;
+        PresetName = preset.Name;
+    }
+
+    private ImageSize AddCustomSize(int width, int height)
+    {
+        var size = new ImageSize($"Custom · {width}×{height}", width, height);
+        SizePresets.Add(size);
+        return size;
+    }
+
+    [RelayCommand]
+    private void SavePreset()
+    {
+        var name = string.IsNullOrWhiteSpace(PresetName) ? "Untitled" : PresetName.Trim();
+        var preset = new Preset
+        {
+            Name = name,
+            Prompt = Prompt,
+            NegativePrompt = string.IsNullOrWhiteSpace(NegativePrompt) ? null : NegativePrompt,
+            ModelId = SelectedModel?.Id,
+            Width = SelectedSize.Width,
+            Height = SelectedSize.Height,
+            Steps = Steps,
+            Seed = Seed,
+            Cfg = (float)Cfg,
+            Sampler = SelectedSampler,
+        };
+
+        var existing = Presets.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+            Presets[Presets.IndexOf(existing)] = preset;
+        else
+            Presets.Add(preset);
+
+        _presetStore.Save(Presets);
+        SelectedPreset = preset;
+        StatusMessage = $"Saved preset '{name}'.";
+    }
+
+    [RelayCommand]
+    private void DeletePreset()
+    {
+        if (SelectedPreset is null)
+            return;
+
+        var name = SelectedPreset.Name;
+        Presets.Remove(SelectedPreset);
+        SelectedPreset = null;
+        _presetStore.Save(Presets);
+        StatusMessage = $"Deleted preset '{name}'.";
     }
 
     private GenerationRequest BuildRequest()
