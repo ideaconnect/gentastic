@@ -54,6 +54,10 @@ public sealed class ModelCatalog : IModelCatalog
     private static readonly ModelLicense IllustriousLicense =
         new("Illustrious-XL · Fair AI Public License 1.0-SD", Gated: false,
             "https://huggingface.co/OnomaAIResearch/Illustrious-xl-early-release-v0");
+    // RealVisXL — a single-file photorealistic SDXL checkpoint, ungated.
+    private static readonly ModelLicense RealVisLicense =
+        new("RealVisXL V5.0 · SDXL (OpenRAIL++-M)", Gated: false,
+            "https://huggingface.co/SG161222/RealVisXL_V5.0");
 
     private readonly IReadOnlyList<ModelSpec> _models =
     [
@@ -92,6 +96,20 @@ public sealed class ModelCatalog : IModelCatalog
             License: Flux2KleinUncensoredLicense,
             DefaultSteps: 4,
             DefaultCfg: 1.0f,
+            IsAdult: true),
+        // Realistic (dedicated, capable): RealVisXL — a top photorealistic SDXL checkpoint, ungated.
+        new ModelSpec(
+            Id: "realvisxl-v5",
+            DisplayName: "RealVis XL V5 — Realistic (SDXL)",
+            Kind: ModelKind.Sdxl,
+            Quantization: Quantization.F16,
+            Files:
+            [
+                new ModelFile(ModelFileRole.Checkpoint, "SG161222/RealVisXL_V5.0", "RealVisXL_V5.0_fp16.safetensors"),
+            ],
+            License: RealVisLicense,
+            DefaultSteps: 25,
+            DefaultCfg: 5.0f,
             IsAdult: true),
         // Anime (dedicated, capable): Illustrious XL — the SDXL anime gold standard, danbooru-trained.
         // Single ungated checkpoint; SDXL isn't guidance-distilled, so negative prompts work normally.
