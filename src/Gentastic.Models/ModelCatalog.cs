@@ -56,7 +56,7 @@ public sealed class ModelCatalog : IModelCatalog
         // encoder path in the engine, not CLIP-L + T5.
         new ModelSpec(
             Id: "flux2-klein-4b",
-            DisplayName: "FLUX.2 klein 4B (experimental)",
+            DisplayName: "FLUX.2 klein 4B (fast)",
             Kind: ModelKind.Flux2Klein,
             Quantization: Quantization.Q4_0,
             Files:
