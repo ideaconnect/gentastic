@@ -106,7 +106,7 @@ public sealed class ModelCatalog : IModelCatalog
                     "Illustrious-XL-v0.1.safetensors"),
             ],
             License: IllustriousLicense,
-            DefaultSteps: 28,
+            DefaultSteps: 24,   // SDXL is ~10 s/step on this Vulkan path; 24 keeps quality, trims time
             DefaultCfg: 6.0f,
             IsAdult: true),
         // Anime (lightweight): a FLUX.1-dev anime finetune (standard FLUX.1 companions, no engine change).
