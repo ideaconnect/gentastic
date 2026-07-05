@@ -2,22 +2,29 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
       Title="Settings">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24" MaxWidth="760" HorizontalAlignment="Left">
-            <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
+        <StackPanel Margin="28,20,28,20" MaxWidth="720" HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                <fa:IconBlock Icon="Gear" FontSize="19" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                <TextBlock Text="Settings" FontSize="21" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
 
             <!-- Runtime -->
-            <ui:Card Padding="16" Margin="0,0,0,12">
+            <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Runtime" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="Microchip" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Runtime" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
                     <TextBlock Text="{Binding HardwareSummary}" />
-                    <TextBlock Text="{Binding BackendStatus}" Margin="0,4,0,10"
+                    <TextBlock Text="{Binding BackendStatus}" Margin="0,4,0,12"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="Preferred backend" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <TextBlock Text="PREFERRED BACKEND" Style="{StaticResource FieldLabelStyle}" />
                     <ComboBox ItemsSource="{Binding BackendOptions}" SelectedItem="{Binding PreferredBackend}"
-                              HorizontalAlignment="Left" MinWidth="180" Margin="0,0,0,10" />
-                    <TextBlock Text="Detected adapters" FontWeight="SemiBold" Margin="0,0,0,4" />
+                              HorizontalAlignment="Left" MinWidth="190" Margin="0,0,0,12" />
+                    <TextBlock Text="DETECTED ADAPTERS" Style="{StaticResource FieldLabelStyle}" />
                     <ItemsControl ItemsSource="{Binding Adapters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -30,59 +37,81 @@
             </ui:Card>
 
             <!-- Appearance -->
-            <ui:Card Padding="16" Margin="0,0,0,12">
+            <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
-                    <TextBlock Text="Theme" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="Palette" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="THEME" Style="{StaticResource FieldLabelStyle}" />
                     <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Theme}"
-                              HorizontalAlignment="Left" MinWidth="180" />
+                              HorizontalAlignment="Left" MinWidth="190" />
                 </StackPanel>
             </ui:Card>
 
             <!-- Model cache -->
-            <ui:Card Padding="16" Margin="0,0,0,12">
+            <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Model cache" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="HardDrive" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Model cache" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
                     <TextBlock Text="{Binding CacheRoot}" TextWrapping="Wrap" />
-                    <TextBlock Margin="0,4,0,10" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Margin="0,4,0,12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                         <Run Text="On disk: " /><Run Text="{Binding CacheSize}" />
                     </TextBlock>
-                    <TextBlock Text="Cache folder override (blank = default; applies after restart)"
-                               FontWeight="SemiBold" Margin="0,0,0,4" />
-                    <Grid Margin="0,0,0,10">
+                    <TextBlock Text="CACHE FOLDER OVERRIDE (BLANK = DEFAULT; APPLIES AFTER RESTART)"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ui:TextBox Grid.Column="0" PlaceholderText="Default location"
                                     Text="{Binding CacheDirectoryOverride, UpdateSourceTrigger=PropertyChanged}" />
-                        <ui:Button Grid.Column="1" Content="Browse…" Margin="8,0,0,0"
-                                   Command="{Binding BrowseCacheDirectoryCommand}" />
+                        <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" Margin="8,0,0,0"
+                                Content="Browse…" Command="{Binding BrowseCacheDirectoryCommand}" />
                     </Grid>
-                    <ui:Button Content="Open cache folder" Icon="{ui:SymbolIcon FolderOpen24}"
-                               Command="{Binding OpenCacheFolderCommand}" HorizontalAlignment="Left" />
+                    <Button Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
+                            Command="{Binding OpenCacheFolderCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="FolderOpen" FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Open cache folder" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </ui:Card>
 
             <!-- Hugging Face -->
-            <ui:Card Padding="16" Margin="0,0,0,12">
+            <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Hugging Face" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="Robot" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Hugging Face" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
                     <TextBlock Text="{Binding TokenStatus}" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="Access token" FontWeight="SemiBold" Margin="0,10,0,4" />
+                    <TextBlock Text="ACCESS TOKEN" Style="{StaticResource FieldLabelStyle}" Margin="0,12,0,6" />
                     <ui:TextBox PlaceholderText="hf_… (needed for gated models)"
                                 Text="{Binding HuggingFaceToken, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </ui:Card>
 
             <!-- Updates -->
-            <ui:Card Padding="16" Margin="0,0,0,12">
+            <ui:Card Padding="18" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Updates" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
-                    <ui:Button Content="Check for updates" Icon="{ui:SymbolIcon ArrowClockwise24}"
-                               Command="{Binding CheckForUpdatesCommand}" HorizontalAlignment="Left" />
-                    <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" Margin="0,8,0,0"
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="CloudArrowDown" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="Updates" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
+                            Command="{Binding CheckForUpdatesCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="ArrowsRotate" FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Check for updates" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" Margin="0,10,0,0"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <ui:HyperlinkButton Content="View releases"
                                         NavigateUri="https://github.com/ideaconnect/gentastic/releases"
@@ -90,13 +119,21 @@
                 </StackPanel>
             </ui:Card>
 
-            <StackPanel Orientation="Horizontal">
-                <ui:Button Content="Save" Appearance="Primary" Icon="{ui:SymbolIcon Save24}"
-                           Command="{Binding SaveCommand}" />
-                <ui:Button Content="Refresh" Icon="{ui:SymbolIcon ArrowClockwise24}"
-                           Command="{Binding RefreshCommand}" Margin="8,0,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <Button Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock Icon="FloppyDisk" FontSize="13" Foreground="White" VerticalAlignment="Center" />
+                        <TextBlock Text="Save" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButtonStyle}" Command="{Binding RefreshCommand}" Margin="10,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock Icon="ArrowsRotate" FontSize="12" VerticalAlignment="Center" />
+                        <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </StackPanel>
-            <TextBlock Text="{Binding SaveStatus}" Margin="0,8,0,0" TextWrapping="Wrap"
+            <TextBlock Text="{Binding SaveStatus}" Margin="0,10,0,0" TextWrapping="Wrap"
                        Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
         </StackPanel>
     </ScrollViewer>
