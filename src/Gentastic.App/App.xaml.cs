@@ -28,6 +28,11 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Screenshot/CI mode: render in software so a plain screen-grab captures the real content
+        // (hardware-composited WPF + Mica otherwise defeats window capture).
+        if (Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") == "1")
+            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+
         base.OnStartup(e);
         await _host.StartAsync();
         ThemeApplier.Apply(_host.Services.GetRequiredService<ISettingsService>().Current.Theme);
