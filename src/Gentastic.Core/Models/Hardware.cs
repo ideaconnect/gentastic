@@ -42,9 +42,14 @@ public sealed record HardwareProfile(
     IReadOnlyList<GpuAdapter> Adapters,
     GpuAdapter? RecommendedAdapter,
     GenerationBackend RecommendedBackend,
-    int RecommendedDeviceIndex)
+    int RecommendedDeviceIndex,
+    IReadOnlyList<BackendProbe> BackendProbes)
 {
     public string Summary => RecommendedAdapter is null
         ? $"{RecommendedBackend} (no GPU detected)"
         : $"{RecommendedAdapter.Name} · {RecommendedBackend} · device {RecommendedDeviceIndex}";
+
+    /// <summary>The probe result for a specific backend, or null if it wasn't probed.</summary>
+    public BackendProbe? ProbeFor(GenerationBackend backend) =>
+        BackendProbes.FirstOrDefault(p => p.Backend == backend);
 }

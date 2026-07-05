@@ -1,9 +1,13 @@
 namespace Gentastic.Core.Settings;
 
-/// <summary>Which compute backend to use. <see cref="Auto"/> defers to hardware detection.</summary>
+/// <summary>Which compute backend to use. <see cref="Auto"/> defers to hardware detection, which
+/// prefers accelerators in the order CUDA → ROCm → Vulkan → CPU. A forced choice is honoured only
+/// when that backend is actually usable; otherwise detection's recommendation is used.</summary>
 public enum BackendPreference
 {
     Auto,
+    Cuda,
+    Rocm,
     Vulkan,
     Cpu,
 }
@@ -32,4 +36,9 @@ public sealed class AppSettings
 
     /// <summary>UI theme.</summary>
     public ThemePreference Theme { get; set; } = ThemePreference.Dark;
+
+    /// <summary>Set once the user has seen the startup runtime-detection dialog and confirmed a
+    /// backend. Keeps that dialog to a first-run event rather than nagging on every launch; it can
+    /// still be reopened from Settings.</summary>
+    public bool RuntimeConfirmed { get; set; }
 }

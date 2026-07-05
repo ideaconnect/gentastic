@@ -168,13 +168,27 @@ public sealed class StableDiffusionEngine : IDiffusionEngine
         return parameter;
     }
 
-    private static GenerationBackend ResolveBackend(BackendPreference preference, IRuntimeDetector detector) =>
-        preference switch
+    private static GenerationBackend ResolveBackend(BackendPreference preference, IRuntimeDetector detector)
+    {
+        var profile = detector.Detect();
+
+        GenerationBackend? forced = preference switch
         {
+            BackendPreference.Cuda => GenerationBackend.Cuda,
+            BackendPreference.Rocm => GenerationBackend.Rocm,
             BackendPreference.Vulkan => GenerationBackend.Vulkan,
             BackendPreference.Cpu => GenerationBackend.Cpu,
-            _ => detector.Detect().RecommendedBackend,
+            _ => null, // Auto — defer entirely to detection.
         };
+
+        if (forced is null)
+            return profile.RecommendedBackend;
+
+        // Honour a forced backend only when detection says it's actually usable; otherwise fall back
+        // to the recommendation so a stale preference (e.g. CUDA saved on a machine that no longer
+        // has the toolkit) can't silently strand generation on a backend that fails to load.
+        return profile.ProbeFor(forced.Value) is { IsReady: true } ? forced.Value : profile.RecommendedBackend;
+    }
 
     /// <summary>Enable the requested accelerator before the native library is loaded. CPU stays
     /// enabled as a safety net; the accelerator's higher <see cref="IBackend.Priority"/> makes the

@@ -45,6 +45,12 @@ StableDiffusion.NET.StableDiffusionCpp.Log += (_, a) => Console.WriteLine($"[sd:
 var detector = new RuntimeDetector(NullLogger<RuntimeDetector>.Instance);
 var hardware = detector.Detect();
 Console.WriteLine($"Runtime: {hardware.Summary}");
+foreach (var probe in hardware.BackendProbes)
+    Console.WriteLine($"  [{probe.Availability,-13}] {probe.Backend,-6} — {probe.Detail}");
+
+// Fast path for verifying runtime detection without a multi-minute generation.
+if (Environment.GetEnvironmentVariable("GENTASTIC_DETECT_ONLY") == "1")
+    return 0;
 
 // Run the full pipeline through GenerationService (download -> load -> sample) — the same path the
 // app uses (GitHub #19). The model is already cached, so EnsureInstalled resolves without downloading.
