@@ -35,10 +35,19 @@ public sealed class ModelCatalog : IModelCatalog
     // CLIP-L + T5 pair) and the FLUX.2 VAE.
     private static readonly ModelFile Qwen3Encoder =
         new(ModelFileRole.TextEncoderLlm, "unsloth/Qwen3-4B-GGUF", "Qwen3-4B-Q4_K_M.gguf");
+    // Community "ablated" Qwen3-4B encoder: FLUX.2 klein's content filter lives in the text encoder,
+    // so swapping this in under the stock klein diffusion unlocks uncensored output.
+    private static readonly ModelFile UncensoredQwen3Encoder =
+        new(ModelFileRole.TextEncoderLlm, "Cordux/flux2-klein-4B-uncensored-text-encoder", "qwen3-4b-abl-q4_0.gguf");
     private static readonly ModelFile Flux2Vae =
         new(ModelFileRole.Vae, "Comfy-Org/flux2-dev", "split_files/vae/flux2-vae.safetensors");
+    private static readonly ModelFile Flux2KleinDiffusion =
+        new(ModelFileRole.DiffusionModel, "leejet/FLUX.2-klein-4B-GGUF", "flux-2-klein-4b-Q4_0.gguf");
     private static readonly ModelLicense Flux2KleinLicense =
         new("FLUX.2 [klein]", Gated: false, "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B");
+    private static readonly ModelLicense Flux2KleinUncensoredLicense =
+        new("FLUX.2 [klein] + community uncensored encoder", Gated: false,
+            "https://huggingface.co/Cordux/flux2-klein-4B-uncensored-text-encoder");
 
     private readonly IReadOnlyList<ModelSpec> _models =
     [
@@ -59,18 +68,27 @@ public sealed class ModelCatalog : IModelCatalog
             DisplayName: "FLUX.2 klein 4B (fast)",
             Kind: ModelKind.Flux2Klein,
             Quantization: Quantization.Q4_0,
-            Files:
-            [
-                new ModelFile(ModelFileRole.DiffusionModel, "leejet/FLUX.2-klein-4B-GGUF", "flux-2-klein-4b-Q4_0.gguf"),
-                Qwen3Encoder,
-                Flux2Vae,
-            ],
+            Files: [Flux2KleinDiffusion, Qwen3Encoder, Flux2Vae],
             License: Flux2KleinLicense,
             DefaultSteps: 4,
             DefaultCfg: 1.0f),
 
-        // Adult-capable FLUX.1-dev finetunes (hidden unless ShowAdultModels is enabled). Standard
-        // FLUX architecture — same CLIP-L / T5 / VAE companions, so no engine changes needed.
+        // Adult models (hidden unless ShowAdultModels is enabled).
+        // Realistic/general: stock FLUX.2 klein diffusion + the ablated Qwen3 encoder — fast (~18s),
+        // strong at photorealism, and handles anime via prompting. Reuses the klein engine path.
+        new ModelSpec(
+            Id: "flux2-klein-uncensored",
+            DisplayName: "FLUX.2 klein — Uncensored (fast, realistic)",
+            Kind: ModelKind.Flux2Klein,
+            Quantization: Quantization.Q4_0,
+            Files: [Flux2KleinDiffusion, UncensoredQwen3Encoder, Flux2Vae],
+            License: Flux2KleinUncensoredLicense,
+            DefaultSteps: 4,
+            DefaultCfg: 1.0f,
+            IsAdult: true),
+        // Anime: a FLUX.1-dev anime finetune (standard FLUX.1 companions, no engine change). Dedicated
+        // FLUX.2 anime NSFW finetunes don't exist yet; SDXL (Pony/Illustrious) remains the anime
+        // gold standard if stronger anime is needed.
         Flux("flux1-modern-anime", "FLUX.1 Modern Anime (uncensored)", ModelKind.FluxDev, Quantization.Q4_0,
             "alfredplpl/flux.1-dev-modern-anime-gguf", "modern-anime_Q4_0.gguf", AnimeFinetuneLicense,
             steps: 20, isAdult: true),
