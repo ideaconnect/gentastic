@@ -61,18 +61,9 @@ public sealed class ModelCatalog : IModelCatalog
 
     private readonly IReadOnlyList<ModelSpec> _models =
     [
-        Flux("flux1-schnell", "FLUX.1 schnell", ModelKind.FluxSchnell, Quantization.Q4_K_S,
-            "city96/FLUX.1-schnell-gguf", "flux1-schnell-Q4_K_S.gguf", SchnellLicense, steps: 4),
-        Flux("flux1-schnell-q8", "FLUX.1 schnell (Q8)", ModelKind.FluxSchnell, Quantization.Q8_0,
-            "city96/FLUX.1-schnell-gguf", "flux1-schnell-Q8_0.gguf", SchnellLicense, steps: 4),
-        Flux("flux1-dev", "FLUX.1 dev", ModelKind.FluxDev, Quantization.Q4_K_S,
-            "city96/FLUX.1-dev-gguf", "flux1-dev-Q4_K_S.gguf", DevLicense, steps: 20),
-        Flux("flux1-dev-q8", "FLUX.1 dev (Q8)", ModelKind.FluxDev, Quantization.Q8_0,
-            "city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", DevLicense, steps: 20),
-
-        // FLUX.2 klein 4B (experimental) — a newer, distilled FLUX.2 variant. Smaller than FLUX.1
-        // (4B transformer + 4B Qwen3 encoder vs FLUX.1's 12B + 9 GB T5), ~5 GB total. Uses the LLM
-        // encoder path in the engine, not CLIP-L + T5.
+        // FLUX.2 klein 4B — the default. A newer, distilled FLUX.2 variant: smaller than FLUX.1 (4B
+        // transformer + 4B Qwen3 encoder vs FLUX.1's 12B + 9 GB T5, ~5 GB total) and the fastest model
+        // on this hardware (~1.8 s/step). Uses the LLM encoder path in the engine, not CLIP-L + T5.
         new ModelSpec(
             Id: "flux2-klein-4b",
             DisplayName: "FLUX.2 klein 4B (fast)",
@@ -82,6 +73,15 @@ public sealed class ModelCatalog : IModelCatalog
             License: Flux2KleinLicense,
             DefaultSteps: 4,
             DefaultCfg: 1.0f),
+
+        Flux("flux1-schnell", "FLUX.1 schnell", ModelKind.FluxSchnell, Quantization.Q4_K_S,
+            "city96/FLUX.1-schnell-gguf", "flux1-schnell-Q4_K_S.gguf", SchnellLicense, steps: 4),
+        Flux("flux1-schnell-q8", "FLUX.1 schnell (Q8)", ModelKind.FluxSchnell, Quantization.Q8_0,
+            "city96/FLUX.1-schnell-gguf", "flux1-schnell-Q8_0.gguf", SchnellLicense, steps: 4),
+        Flux("flux1-dev", "FLUX.1 dev", ModelKind.FluxDev, Quantization.Q4_K_S,
+            "city96/FLUX.1-dev-gguf", "flux1-dev-Q4_K_S.gguf", DevLicense, steps: 20),
+        Flux("flux1-dev-q8", "FLUX.1 dev (Q8)", ModelKind.FluxDev, Quantization.Q8_0,
+            "city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", DevLicense, steps: 20),
 
         // Adult models (hidden unless ShowAdultModels is enabled).
         // Realistic/general: stock FLUX.2 klein diffusion + the ablated Qwen3 encoder — fast (~18s),
