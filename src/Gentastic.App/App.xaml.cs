@@ -31,6 +31,7 @@ public partial class App : Application
         base.OnStartup(e);
         await _host.StartAsync();
         ThemeApplier.Apply(_host.Services.GetRequiredService<ISettingsService>().Current.Theme);
+        RuntimeCheck.Warn(_host.Services.GetRequiredService<IRuntimeDetector>());
         _host.Services.GetRequiredService<MainWindow>().Show();
     }
 
