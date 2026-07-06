@@ -4,6 +4,9 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
       Title="Settings">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,20" MaxWidth="720" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
@@ -54,6 +57,23 @@
                                 <TextBlock Text="Re-detect…" Margin="8,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
+                    </StackPanel>
+
+                    <!-- On-demand CUDA runtime — lets NVIDIA users run CUDA with no CUDA Toolkit install. -->
+                    <StackPanel Margin="0,14,0,0"
+                                Visibility="{Binding HasCudaRuntimeSection, Converter={StaticResource BoolToVis}}">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
+                                Visibility="{Binding CanDownloadCudaRuntime, Converter={StaticResource BoolToVis}}"
+                                Command="{Binding DownloadCudaRuntimeCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="Download" FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="Download CUDA runtime (~540 MB)" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <ProgressBar Minimum="0" Maximum="1" Value="{Binding CudaDownloadFraction}" Height="4" Margin="0,8,0,0"
+                                     Visibility="{Binding IsDownloadingCuda, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{Binding CudaRuntimeStatus}" TextWrapping="Wrap" FontSize="12" Margin="0,8,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     </StackPanel>
                 </StackPanel>
             </ui:Card>

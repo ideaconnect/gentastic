@@ -7,7 +7,9 @@ using CommunityToolkit.Mvvm.Input;
 using Gentastic.App;
 using Gentastic.App.Views;
 using Gentastic.Core.Abstractions;
+using Gentastic.Core.Models;
 using Gentastic.Core.Settings;
+using Gentastic.Models;
 using Microsoft.Win32;
 
 namespace Gentastic.App.ViewModels;
@@ -22,6 +24,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ISettingsService _settings;
     private readonly IUpdateService _updateService;
     private readonly Func<RuntimeDialog> _runtimeDialogFactory;
+    private readonly CudaRuntime _cudaRuntime;
 
     public SettingsViewModel(
         IRuntimeDetector detector,
@@ -29,7 +32,8 @@ public partial class SettingsViewModel : ObservableObject
         IDiffusionEngine engine,
         ISettingsService settings,
         IUpdateService updateService,
-        Func<RuntimeDialog> runtimeDialogFactory)
+        Func<RuntimeDialog> runtimeDialogFactory,
+        CudaRuntime cudaRuntime)
     {
         _detector = detector;
         _repository = repository;
@@ -37,6 +41,7 @@ public partial class SettingsViewModel : ObservableObject
         _settings = settings;
         _updateService = updateService;
         _runtimeDialogFactory = runtimeDialogFactory;
+        _cudaRuntime = cudaRuntime;
 
         _huggingFaceToken = settings.Current.HuggingFaceToken ?? string.Empty;
         _preferredBackend = settings.Current.PreferredBackend;
@@ -66,6 +71,18 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _showAdultModels;
     [ObservableProperty] private string _saveStatus = string.Empty;
     [ObservableProperty] private string _updateStatus = string.Empty;
+
+    // On-demand CUDA runtime (lets the CUDA backend run without the CUDA Toolkit).
+    [ObservableProperty] private bool _canDownloadCudaRuntime;
+    [ObservableProperty] private bool _isDownloadingCuda;
+    [ObservableProperty] private double _cudaDownloadFraction;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCudaRuntimeSection))]
+    private string _cudaRuntimeStatus = string.Empty;
+
+    /// <summary>Whether the CUDA-runtime section has anything to show (an NVIDIA machine, or a
+    /// download in progress / done) — otherwise it's hidden.</summary>
+    public bool HasCudaRuntimeSection => !string.IsNullOrEmpty(CudaRuntimeStatus);
 
     [RelayCommand]
     private void BrowseCacheDirectory()
@@ -114,6 +131,16 @@ public partial class SettingsViewModel : ObservableObject
         TokenStatus = hasToken
             ? "Hugging Face token set — gated models such as FLUX.1-dev can download."
             : "No Hugging Face token — required for gated models such as FLUX.1-dev.";
+
+        // Offer the on-demand CUDA runtime when an NVIDIA GPU is present but CUDA isn't usable yet
+        // (no toolkit, runtime not downloaded) — so users get CUDA without installing the CUDA Toolkit.
+        var hasNvidia = hardware.Adapters.Any(a => a.Vendor == GpuVendor.Nvidia);
+        var cudaReady = hardware.ProbeFor(GenerationBackend.Cuda)?.IsReady == true;
+        CanDownloadCudaRuntime = hasNvidia && !cudaReady && !CudaRuntime.IsInstalled && !IsDownloadingCuda;
+        CudaRuntimeStatus =
+            CudaRuntime.IsInstalled ? "CUDA runtime installed — restart to switch to CUDA."
+            : CanDownloadCudaRuntime ? "NVIDIA GPU detected. Download the CUDA runtime (~540 MB) to enable CUDA — no CUDA Toolkit needed."
+            : string.Empty;
     }
 
     [RelayCommand]
@@ -127,6 +154,34 @@ public partial class SettingsViewModel : ObservableObject
         PreferredBackend = _settings.Current.PreferredBackend;
         Refresh();
         SaveStatus = "Runtime updated. Backend changes take effect after restart.";
+    }
+
+    [RelayCommand]
+    private async Task DownloadCudaRuntimeAsync()
+    {
+        IsDownloadingCuda = true;
+        CanDownloadCudaRuntime = false;
+        try
+        {
+            var progress = new Progress<CudaDownloadProgress>(p =>
+            {
+                CudaDownloadFraction = p.Fraction ?? 0;
+                CudaRuntimeStatus =
+                    $"Downloading CUDA runtime… {p.BytesReceived / 1_000_000.0:F0} MB (file {p.FileIndex}/{p.FileCount})";
+            });
+            await _cudaRuntime.InstallAsync(progress);
+            CudaRuntimeStatus = "CUDA runtime installed — restart to switch to CUDA.";
+        }
+        catch (Exception ex)
+        {
+            CudaRuntimeStatus = $"CUDA runtime download failed: {ex.Message}";
+        }
+        finally
+        {
+            IsDownloadingCuda = false;
+            CudaDownloadFraction = 0;
+            Refresh();
+        }
     }
 
     [RelayCommand]

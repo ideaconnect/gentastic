@@ -38,6 +38,10 @@ public partial class App : Application
         var settings = _host.Services.GetRequiredService<ISettingsService>();
         ThemeApplier.Apply(settings.Current.Theme);
 
+        // If the user downloaded the CUDA runtime (no toolkit), point CUDA_PATH + the DLL search path
+        // at it before anything resolves the engine. Must precede detection and the first native call.
+        Gentastic.Models.CudaRuntime.ActivateIfInstalled();
+
         // Screenshot harness for the dialog itself: show it, let it self-capture and shut down.
         if (Environment.GetEnvironmentVariable("GENTASTIC_SHOT_RUNTIME") == "1")
         {
@@ -83,6 +87,7 @@ internal static class HostBuilderExtensions
         services.AddSingleton<IPresetStore, JsonPresetStore>();
         services.AddSingleton<IRuntimeDetector, RuntimeDetector>();
         services.AddSingleton<IModelCatalog, ModelCatalog>();
+        services.AddSingleton<CudaRuntime>();
         services.AddSingleton(sp =>
         {
             var settings = sp.GetRequiredService<ISettingsService>();
