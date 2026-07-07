@@ -3,8 +3,8 @@ using Gentastic.Core.Models;
 namespace Gentastic.Core.Abstractions;
 
 /// <summary>Reports, per compute backend, whether this build ships its native library and whether
-/// its runtime/SDK is installed on the machine. Implementations must stay lightweight — environment
-/// variables and file checks only — so this is safe to call at startup, before the diffusion engine
+/// its runtime/SDK is installed on the machine. Implementations must stay lightweight - environment
+/// variables and file checks only - so this is safe to call at startup, before the diffusion engine
 /// loads (and pins) the native backend.</summary>
 public interface IBackendInspector
 {

@@ -3,12 +3,13 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+      xmlns:ctrl="clr-namespace:Gentastic.App.Controls"
       Title="Models">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <Grid Margin="28,20,28,0">
+    <Grid Margin="28,4,28,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -16,24 +17,16 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <fa:IconBlock Icon="CubesStacked" FontSize="19" Margin="0,0,12,0" VerticalAlignment="Center"
-                              Foreground="{StaticResource AccentBrush}" />
-                <TextBlock Text="Models" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" />
-            </StackPanel>
-            <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center"
-                    Command="{Binding RefreshCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <fa:IconBlock Icon="ArrowsRotate" FontSize="12" VerticalAlignment="Center" />
-                    <TextBlock Text="Refresh" Margin="7,0,0,0" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
-        </Grid>
+        <ctrl:PageHeader Grid.Row="0" Title="Models" Icon="CubesStacked">
+            <ctrl:PageHeader.Actions>
+                <Button Style="{StaticResource SecondaryButtonStyle}" Command="{Binding RefreshCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock Icon="ArrowsRotate" FontSize="12" VerticalAlignment="Center" />
+                        <TextBlock Text="Refresh" Margin="7,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </ctrl:PageHeader.Actions>
+        </ctrl:PageHeader>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Models}">

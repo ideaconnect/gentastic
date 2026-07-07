@@ -22,6 +22,7 @@ public partial class ModelRowViewModel : ObservableObject
 
     public string Details =>
         $"{Spec.Kind} · {Spec.Quantization} · {Spec.DefaultSteps} steps · " +
+        $"~{Spec.ApproxMemoryGB} GB GPU memory · {Spec.ApproxDownloadGB:0.#} GB download · " +
         $"{Spec.License.Name}{(Spec.License.Gated ? " (gated)" : string.Empty)}";
 
     /// <summary>True when the model requires accepting a license / requesting access on Hugging Face
@@ -47,6 +48,10 @@ public partial class ModelsViewModel : ObservableObject
         _repository = repository;
         _settings = settings;
         Refresh();
+
+        // Re-filter the manager live when settings are saved, so toggling "Show adult models" adds or
+        // removes 18+ rows immediately instead of only after an app restart.
+        settings.Changed += (_, _) => Refresh();
     }
 
     public ObservableCollection<ModelRowViewModel> Models { get; } = [];
@@ -134,7 +139,7 @@ public partial class ModelsViewModel : ObservableObject
         try
         {
             Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-            row!.Status = "Opened the model page — accept access, add a token in Settings, then download.";
+            row!.Status = "Opened the model page - accept access, add a token in Settings, then download.";
         }
         catch (Exception ex)
         {

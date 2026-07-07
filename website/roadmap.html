@@ -1,0 +1,100 @@
+---
+layout: default
+title: Roadmap
+description: What Gentastic already does, what's actively being worked on, and what's planned - including video generation.
+---
+
+<section style="padding-top: 56px;">
+  <div class="container container-narrow">
+    <div class="section-head reveal">
+      <p class="eyebrow">Roadmap</p>
+      <h1>Where Gentastic is headed</h1>
+      <p>No fixed dates - this is a small, actively-developed project. Here's what's shipped,
+        what's next, and what's on the horizon.</p>
+    </div>
+
+    <h2 class="sr-only">Timeline</h2>
+    <div class="timeline">
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>Core text-to-image &amp; image-to-image <span class="status-badge">Shipped</span></h3>
+        <p>FLUX.1 (schnell &amp; dev) and FLUX.2 klein, with automatic Hugging Face downloads, license
+          gating, and CUDA/Vulkan runtime auto-detection.</p>
+      </div>
+
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>SDXL model family <span class="status-badge">Shipped</span></h3>
+        <p>Photoreal and anime-focused SDXL checkpoints alongside FLUX, each with automatic
+          quality-tag prefixes and per-model resolution presets.</p>
+      </div>
+
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>Keep-face identity generation <span class="status-badge">Shipped</span></h3>
+        <p>PhotoMaker-based identity lock for SDXL, plus face-preserving instruction editing on
+          FLUX Kontext &amp; klein - generate or edit a specific person from one reference photo, no
+          training required.</p>
+      </div>
+
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>Instruction-based image editing <span class="status-badge">Shipped</span></h3>
+        <p>FLUX.1 Kontext and FLUX.2 klein editing - describe a change and it's applied while the rest
+          of the image is preserved.</p>
+      </div>
+
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>Gallery, presets &amp; on-demand CUDA <span class="status-badge">Shipped</span></h3>
+        <p>Metadata-rich gallery with a disk thumbnail cache, prompt/parameter presets, and a
+          no-toolkit-required on-demand CUDA runtime download.</p>
+      </div>
+
+      <div class="timeline-item is-done reveal">
+        <span class="timeline-dot">{% include icon-check.html %}</span>
+        <h3>Responsible-use guardrails <span class="status-badge">Shipped</span></h3>
+        <p>Opt-in age gate for adult models, plus a per-generation acknowledgement of the rules -
+          before every adult or identity-locked generation.</p>
+      </div>
+
+      <div class="timeline-item is-progress reveal">
+        <span class="timeline-dot"></span>
+        <h3>Native AMD ROCm 7 <span class="status-badge">In progress</span></h3>
+        <p>Vulkan already covers AMD GPUs today. The upstream StableDiffusion.NET ROCm backend is
+          being integrated and validated on real AMD hardware before Gentastic bundles it.</p>
+      </div>
+
+      <div class="timeline-item is-planned reveal">
+        <span class="timeline-dot"></span>
+        <h3>Packaged installer &amp; auto-update <span class="status-badge">Planned</span></h3>
+        <p>A signed installer and in-app update checks, on top of today's portable ZIP.</p>
+      </div>
+
+      <div class="timeline-item is-planned reveal">
+        <span class="timeline-dot"></span>
+        <h3>Inpainting, upscaling &amp; ControlNet <span class="status-badge">Planned</span></h3>
+        <p>Targeted region editing, quality upscaling, and structural guidance for more precise
+          control over composition.</p>
+      </div>
+
+      <div class="timeline-item is-planned reveal">
+        <span class="timeline-dot"></span>
+        <h3>Video generation <span class="status-badge">Planned</span></h3>
+        <p>Local, GPU-accelerated video generation is on the roadmap as the next major surface for
+          Gentastic - same philosophy: pick a model, describe what you want, no workflow graphs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container reveal">
+    <h2>Have an idea, or found a bug?</h2>
+    <p>Gentastic is open source - issues and pull requests are welcome.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary btn-lg" href="{{ site.issues }}" target="_blank" rel="noopener">Open an issue</a>
+      <a class="btn btn-ghost btn-lg" href="{{ site.repo }}" target="_blank" rel="noopener">{% include icon-github.html %} View the repo</a>
+    </div>
+  </div>
+</section>

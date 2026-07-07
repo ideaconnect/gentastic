@@ -1,0 +1,68 @@
+<ui:FluentWindow x:Class="Gentastic.App.Views.AdultAcknowledgementDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+                 Title="Gentastic - Acknowledgement"
+                 Width="560" Height="470"
+                 ResizeMode="NoResize"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="" />
+
+        <StackPanel Grid.Row="1" Margin="28,8,28,0">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <fa:IconBlock Icon="TriangleExclamation" FontSize="20" VerticalAlignment="Center"
+                              Foreground="{StaticResource AccentBrush}" />
+                <TextBlock Text="Before you generate" FontSize="20" FontWeight="SemiBold"
+                           Margin="12,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Margin="0,0,0,14"
+                       Text="Please read and confirm each point below before generating. All boxes must be ticked to continue." />
+
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="14,12">
+                <StackPanel>
+                    <CheckBox x:Name="Check1" Margin="0,0,0,10" HorizontalContentAlignment="Left"
+                              Checked="OnCheckChanged" Unchecked="OnCheckChanged">
+                        <TextBlock TextWrapping="Wrap" MaxWidth="460"
+                                   Text="I understand that I must not generate imagery depicting minors." />
+                    </CheckBox>
+                    <CheckBox x:Name="Check2" Margin="0,0,0,10" HorizontalContentAlignment="Left"
+                              Checked="OnCheckChanged" Unchecked="OnCheckChanged">
+                        <TextBlock TextWrapping="Wrap" MaxWidth="460"
+                                   Text="I understand that I must not generate imagery depicting real people other than myself." />
+                    </CheckBox>
+                    <CheckBox x:Name="Check3" Margin="0,0,0,10" HorizontalContentAlignment="Left"
+                              Checked="OnCheckChanged" Unchecked="OnCheckChanged">
+                        <TextBlock TextWrapping="Wrap" MaxWidth="460"
+                                   Text="I understand that I must not generate deepfakes." />
+                    </CheckBox>
+                    <CheckBox x:Name="Check4" HorizontalContentAlignment="Left"
+                              Checked="OnCheckChanged" Unchecked="OnCheckChanged">
+                        <TextBlock TextWrapping="Wrap" MaxWidth="460"
+                                   Text="I understand that, although this application runs offline on my own computer, I may still be held legally responsible for what I generate." />
+                    </CheckBox>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Row="2" Padding="28,14" Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource SecondaryButtonStyle}" Content="Cancel" Click="OnCancel" />
+                <Button x:Name="ContinueButton" Style="{StaticResource PrimaryButtonStyle}" Margin="10,0,0,0"
+                        IsEnabled="False" Click="OnContinue" Content="I understand - continue" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

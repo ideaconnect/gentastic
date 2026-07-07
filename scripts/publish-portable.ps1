@@ -7,7 +7,7 @@
   that folder from the NuGet packages so the loader finds the backends at runtime.
 
   The shipped build is universal: it bundles CPU + Vulkan + NVIDIA CUDA 12 so a single download works
-  on AMD/Intel (Vulkan), NVIDIA (CUDA — GTX 10-series through RTX 50-series), and CPU. The runtime
+  on AMD/Intel (Vulkan), NVIDIA (CUDA - GTX 10-series through RTX 50-series), and CPU. The runtime
   detector auto-selects the best available backend. CUDA is only pulled in here (via -p:IncludeCuda=true),
   not during normal dev/CI builds, so those stay lean.
 .EXAMPLE
@@ -45,6 +45,14 @@ foreach ($pkg in $backendPkgs) {
     if (Test-Path $src) { Copy-Item (Join-Path $src '*') $nativeDst -Recurse -Force }
 }
 Write-Host "Native backends: $((Get-ChildItem $nativeDst -Directory).Name -join ', ')"
+
+# Bundle the license + third-party notices so the redistribution meets the MIT/Apache/LGPL/OFL/CC-BY
+# attribution obligations (see THIRD_PARTY_NOTICE.md). HPPH (LGPL-2.1) requires the notice + license
+# text to travel with the binary; the others require reproducing their notices.
+Copy-Item (Join-Path $root "LICENSE") $outDir -Force
+Copy-Item (Join-Path $root "THIRD_PARTY_NOTICE.md") $outDir -Force
+Copy-Item (Join-Path $root "licenses") $outDir -Recurse -Force
+Write-Host "Bundled: LICENSE, THIRD_PARTY_NOTICE.md, licenses/"
 
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Compress-Archive -Path (Join-Path $outDir '*') -DestinationPath $zipPath

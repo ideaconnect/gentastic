@@ -31,6 +31,15 @@ public abstract record GenerationRequest
     /// <summary>Classifier-free guidance. 1.0 disables the negative prompt (fastest).</summary>
     public float Cfg { get; init; } = 1.0f;
     public Sampler Sampler { get; init; } = Sampler.EulerA;
+
+    /// <summary>Optional identity reference face photo for PhotoMaker models - the generated person
+    /// keeps this face. Requires the prompt to contain a class word + the "img" trigger (e.g.
+    /// "a woman img, …"). Ignored by non-PhotoMaker models.</summary>
+    public RenderedImage? ReferenceImage { get; init; }
+
+    /// <summary>PhotoMaker identity strength (sd.cpp StyleStrength, ~0-50; higher = stronger identity,
+    /// less prompt influence on the face). Only used when <see cref="ReferenceImage"/> is set.</summary>
+    public float IdentityStrength { get; init; } = 20f;
 }
 
 public sealed record TextToImageRequest : GenerationRequest;
@@ -42,8 +51,11 @@ public sealed record ImageToImageRequest : GenerationRequest
     public float DenoiseStrength { get; init; } = 0.75f;
 }
 
-/// <summary>Progress reported while sampling.</summary>
+/// <summary>Progress reported while sampling. <see cref="Stage"/> is normally null (a sampling step);
+/// <see cref="DecodingStage"/> marks the post-sampling VAE decode, which the native engine doesn't
+/// report step-by-step (and which runs slowly on the CPU on Strix Halo).</summary>
 public sealed record GenerationProgress(int Step, int TotalSteps, string? Stage = null)
 {
+    public const string DecodingStage = "decoding";
     public double Fraction => TotalSteps <= 0 ? 0 : (double)Step / TotalSteps;
 }

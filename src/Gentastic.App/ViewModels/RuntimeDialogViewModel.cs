@@ -39,7 +39,7 @@ public partial class RuntimeDialogViewModel : ObservableObject
         var profile = detector.Detect();
 
         HardwareSummary = profile.Adapters.Count == 0
-            ? "No GPU detected — generation will run on the CPU."
+            ? "No GPU detected - generation will run on the CPU."
             : string.Join("   ·   ", profile.Adapters.Select(a => $"{a.Name} · {a.TotalMemoryGiB:F1} GiB"));
 
         // "Automatic" leads and is preselected: it re-detects each launch, so it keeps working if the
@@ -47,7 +47,7 @@ public partial class RuntimeDialogViewModel : ObservableObject
         Options.Add(new RuntimeOption
         {
             Title = "Automatic",
-            Detail = $"Recommended — use the best available runtime ({BackendName(profile.RecommendedBackend)}).",
+            Detail = $"Recommended - use the best available runtime ({BackendName(profile.RecommendedBackend)}).",
             Preference = BackendPreference.Auto,
             Icon = IconChar.WandMagicSparkles,
             IconBrush = Accent,

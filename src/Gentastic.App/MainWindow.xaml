@@ -4,12 +4,16 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
                  Title="Gentastic"
+                 Icon="/Assets/icon.ico"
                  Width="1180" Height="780"
                  MinWidth="940" MinHeight="600"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica"
                  WindowCornerPreference="Round"
                  WindowStartupLocation="CenterScreen">
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </ui:FluentWindow.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="232" />
@@ -19,20 +23,34 @@
         <!-- SIDEBAR -->
         <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
             <DockPanel>
-                <!-- Brand -->
-                <Border DockPanel.Dock="Top" Height="64" Padding="18,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentBrush}">
-                            <fa:IconBlock Icon="WandMagicSparkles" FontSize="14" Foreground="White"
-                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <TextBlock Text="Gentastic" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                                   Margin="12,0,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
+                <!-- Brand: the icon already carries the "Gentastic" wordmark, shown full-width.
+                     HighQuality scaling (Fant) smooths the downscale from 717px so it isn't aliased. -->
+                <Border DockPanel.Dock="Top" Padding="16,16,16,8">
+                    <Image Source="/Assets/icon-app.png" Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
                 </Border>
 
                 <!-- Footer nav -->
-                <StackPanel DockPanel.Dock="Bottom" Margin="12,0,12,14">
+                <StackPanel DockPanel.Dock="Bottom" Margin="12,0,12,12">
+                    <!-- About -->
+                    <RadioButton x:Name="NavAbout" Style="{StaticResource NavItemStyle}" GroupName="Nav"
+                                 Tag="AboutPage" Checked="OnNavChecked">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="CircleInfo" FontSize="15" Width="24" />
+                            <TextBlock Text="About" Margin="4,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Report an issue (opens the project's GitHub issues) -->
+                    <Button Style="{StaticResource SidebarActionStyle}" Command="{Binding ReportIssueCommand}"
+                            ToolTip="Open the project's issue tracker on GitHub">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Bug" FontSize="15" Width="24" VerticalAlignment="Center" />
+                            <TextBlock Text="Report an issue" Margin="4,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Settings -->
                     <RadioButton x:Name="NavSettings" Style="{StaticResource NavItemStyle}" GroupName="Nav"
                                  Tag="SettingsPage" Checked="OnNavChecked">
                         <StackPanel Orientation="Horizontal">
@@ -40,6 +58,37 @@
                             <TextBlock Text="Settings" Margin="4,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
+
+                    <!-- Buy me a coffee (support CTA, below the nav rows) -->
+                    <Button Style="{StaticResource SidebarCoffeeButtonStyle}" Command="{Binding OpenCoffeeCommand}"
+                            ToolTip="Support Gentastic - buymeacoffee.com/idct" Margin="0,8,0,2">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="MugHot" FontSize="14" Width="22" VerticalAlignment="Center" />
+                            <TextBlock Text="Buy me a coffee" Margin="4,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Check for updates - bottom corner. Auto-runs once at startup; click to re-check. -->
+                    <Border Height="1" Margin="4,8,4,6" Opacity="0.4"
+                            Background="{StaticResource SidebarMutedBrush}" />
+                    <Button Style="{StaticResource SidebarUpdateStyle}" Command="{Binding CheckForUpdatesCommand}"
+                            ToolTip="{Binding UpdateStatus}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="ArrowsRotate" FontSize="11" Width="20" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding UpdateStatus}" VerticalAlignment="Center"
+                                       MaxWidth="150" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Button>
+                    <!-- Only shown when a newer release actually exists -->
+                    <Button Style="{StaticResource SidebarUpdateStyle}" Command="{Binding OpenLatestReleaseCommand}"
+                            Foreground="{StaticResource AccentBrush}"
+                            Visibility="{Binding HasUpdate, Converter={StaticResource BoolToVis}}"
+                            ToolTip="Open the latest release on GitHub">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Download" FontSize="11" Width="20" VerticalAlignment="Center" />
+                            <TextBlock Text="Download the update" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Main nav -->
@@ -50,7 +99,7 @@
                                  Tag="GeneratePage" Checked="OnNavChecked">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="WandMagicSparkles" FontSize="15" Width="24" />
-                            <TextBlock Text="Generate" Margin="4,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Image generation" Margin="4,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="NavModels" Style="{StaticResource NavItemStyle}" GroupName="Nav"

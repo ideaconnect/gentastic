@@ -43,7 +43,7 @@ if (missing.Count > 0)
         missing.ForEach(m => Console.Error.WriteLine("  " + m));
         return 3;
     }
-    Console.WriteLine($"{missing.Count} file(s) not cached — they'll download first.");
+    Console.WriteLine($"{missing.Count} file(s) not cached - they'll download first.");
 }
 
 StableDiffusion.NET.StableDiffusionCpp.Log += (_, a) => Console.WriteLine($"[sd:{a.Level}] {a.Text}");
@@ -52,13 +52,13 @@ var detector = new RuntimeDetector(NullLogger<RuntimeDetector>.Instance);
 var hardware = detector.Detect();
 Console.WriteLine($"Runtime: {hardware.Summary}");
 foreach (var probe in hardware.BackendProbes)
-    Console.WriteLine($"  [{probe.Availability,-13}] {probe.Backend,-6} — {probe.Detail}");
+    Console.WriteLine($"  [{probe.Availability,-13}] {probe.Backend,-6} - {probe.Detail}");
 
 // Fast path for verifying runtime detection without a multi-minute generation.
 if (Environment.GetEnvironmentVariable("GENTASTIC_DETECT_ONLY") == "1")
     return 0;
 
-// Run the full pipeline through GenerationService (download -> load -> sample) — the same path the
+// Run the full pipeline through GenerationService (download -> load -> sample) - the same path the
 // app uses (GitHub #19). The model is already cached, so EnsureInstalled resolves without downloading.
 var httpFactory = new SimpleHttpClientFactory();
 var repository = new HuggingFaceModelRepository(httpFactory, NullLogger<HuggingFaceModelRepository>.Instance);
@@ -74,15 +74,24 @@ static int EnvInt(string name, int fallback) =>
 static float EnvFloat(string name, float fallback) =>
     float.TryParse(Environment.GetEnvironmentVariable(name), System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : fallback;
 
+var rawPrompt = Environment.GetEnvironmentVariable("GENTASTIC_PROMPT")
+                ?? "a single red apple on a wooden table, studio photo, sharp focus, soft light";
+// Mirror the app for PhotoMaker: ComposePrompt auto-inserts the required "img" trigger.
+var effectivePrompt = spec.UsesPhotoMaker ? spec.ComposePrompt(rawPrompt, isExplicit: false) : rawPrompt;
+
 var request = new TextToImageRequest
 {
-    Prompt = "a single red apple on a wooden table, studio photo, sharp focus, soft light",
+    Prompt = effectivePrompt,
     Width = EnvInt("GENTASTIC_W", 512),
     Height = EnvInt("GENTASTIC_H", 512),
     Steps = EnvInt("GENTASTIC_STEPS", 4),
     Seed = 42,
     Cfg = EnvFloat("GENTASTIC_CFG", 1.0f),
     Sampler = Sampler.Euler,
+    // PhotoMaker: pass a reference face through the REAL engine path (GENTASTIC_PM_REF, non-spike).
+    ReferenceImage = Environment.GetEnvironmentVariable("GENTASTIC_PM_REF") is { } rp && File.Exists(rp)
+        ? LoadRenderedImage(rp) : null,
+    IdentityStrength = EnvFloat("GENTASTIC_PM_STRENGTH", 20f),
 };
 Console.WriteLine($"Request: {request.Width}x{request.Height}, {request.Steps} steps, cfg {request.Cfg}.");
 
@@ -129,6 +138,17 @@ if (Environment.GetEnvironmentVariable("GENTASTIC_I2I") == "1")
 
 // A real image has plenty of tonal variety; near-uniform output signals a broken pipeline.
 return distinct < 16 ? 4 : 0;
+
+// Load a PNG/JPG file as a Core RenderedImage (for the engine's ReferenceImage path).
+static RenderedImage LoadRenderedImage(string path)
+{
+    var frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+    var rgb = new FormatConvertedBitmap(frame, PixelFormats.Rgb24, null, 0);
+    int w = rgb.PixelWidth, h = rgb.PixelHeight, stride = w * 3;
+    var px = new byte[h * stride];
+    rgb.CopyPixels(px, stride, 0);
+    return new RenderedImage(px, w, h, 3);
+}
 
 static void SavePng(RenderedImage image, string path)
 {

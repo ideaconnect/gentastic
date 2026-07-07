@@ -11,7 +11,7 @@ namespace Gentastic.Hardware;
 /// preferred in the order CUDA → ROCm → Vulkan → CPU: a backend is only recommended when matching
 /// hardware is present, its native library is bundled, and its runtime/SDK is installed. On the
 /// project's target hardware (AMD Radeon 8060S / Strix Halo) CUDA has no NVIDIA GPU and ROCm has no
-/// HIP SDK, so this resolves to Vulkan — with CPU as the guaranteed fallback.
+/// HIP SDK, so this resolves to Vulkan - with CPU as the guaranteed fallback.
 /// </summary>
 public sealed class RuntimeDetector : IRuntimeDetector
 {
@@ -42,7 +42,7 @@ public sealed class RuntimeDetector : IRuntimeDetector
 
         var probes = BuildProbes(adapters, _inspector);
         foreach (var p in probes)
-            _logger.LogInformation("Backend {Backend}: {Availability} — {Detail}", p.Backend, p.Availability, p.Detail);
+            _logger.LogInformation("Backend {Backend}: {Availability} - {Detail}", p.Backend, p.Availability, p.Detail);
 
         var recommended = Recommend(probes);
         var recommendedAdapter = MatchingAdapter(recommended, adapters);
@@ -138,7 +138,7 @@ public sealed class RuntimeDetector : IRuntimeDetector
 
     private static string ReadyDetail(GenerationBackend backend, GpuAdapter? adapter) => backend switch
     {
-        GenerationBackend.Cpu => "Always available — runs on the CPU (much slower than a GPU).",
+        GenerationBackend.Cpu => "Always available - runs on the CPU (much slower than a GPU).",
         _ => adapter is null ? "Ready." : $"{adapter.Name} · {adapter.TotalMemoryGiB:F1} GiB",
     };
 

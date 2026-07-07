@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# Build + test only — no write access to the repo needed.
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     runs-on: windows-latest

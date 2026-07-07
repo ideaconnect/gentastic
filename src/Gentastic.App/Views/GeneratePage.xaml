@@ -3,12 +3,28 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+      xmlns:ctrl="clr-namespace:Gentastic.App.Controls"
       Title="Generate">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <Grid Margin="28,20,28,0">
+    <Grid Margin="28,4,28,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ctrl:PageHeader Grid.Row="0" Title="Generate" Icon="WandMagicSparkles">
+            <ctrl:PageHeader.Actions>
+                <Button Style="{StaticResource SecondaryButtonStyle}" Padding="9,5"
+                        Command="{Binding ToggleHelpCommand}" ToolTip="Show or hide the field explanations">
+                    <fa:IconBlock Icon="CircleQuestion" FontSize="14" VerticalAlignment="Center" />
+                </Button>
+            </ctrl:PageHeader.Actions>
+        </ctrl:PageHeader>
+
+        <Grid Grid.Row="1">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="466" />
             <ColumnDefinition Width="*" />
@@ -21,15 +37,13 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="0,0,10,12">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-                    <fa:IconBlock Icon="WandMagicSparkles" FontSize="18" VerticalAlignment="Center"
-                                  Foreground="{StaticResource AccentBrush}" />
-                    <TextBlock Text="Text to image" FontSize="21" FontWeight="SemiBold"
-                               Margin="10,0,0,0" VerticalAlignment="Center" />
-                </StackPanel>
+            <StackPanel Margin="0,0,18,12">
 
                 <TextBlock Text="Preset" Style="{StaticResource FieldLabelStyle}" />
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="Save the current prompt + settings under a name, or pick one to restore them. Example: choose “Portrait” → it re-fills that saved prompt, size and sliders." />
+                </Border>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -63,6 +77,10 @@
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Prompt" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="Describe what you want - the AI builds the image from these words; more detail = more control. Example: “a red fox in a snowy forest, golden light” → a fox scene with warm, low sun." />
+                </Border>
                 <ui:TextBox PlaceholderText="Describe the image you want…"
                             Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}"
                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" Margin="0,0,0,12" />
@@ -72,6 +90,10 @@
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Negative prompt" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="What to keep OUT of the image. Only works when CFG &gt; 1 (distilled FLUX/klein ignore it at CFG 1). Example: “blurry, extra fingers, watermark” → steers the result away from those." />
+                </Border>
                 <ui:TextBox PlaceholderText="What to avoid…"
                             Text="{Binding NegativePrompt, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding IsNegativePromptEnabled}"
@@ -80,8 +102,11 @@
                            FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                            Margin="0,0,0,12" />
 
-                <ui:ToggleSwitch Content="Image to image" IsChecked="{Binding UseInputImage}"
+                <ui:ToggleSwitch Content="{Binding InputImageToggleLabel}" IsChecked="{Binding UseInputImage}"
                                  ToolTip="Start from an input image instead of noise" Margin="0,0,0,8" />
+                <TextBlock Text="{Binding EditModeHint}" TextWrapping="Wrap"
+                           Visibility="{Binding ShowEditHint, Converter={StaticResource BoolToVis}}"
+                           FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,8" />
                 <Border Visibility="{Binding UseInputImage, Converter={StaticResource BoolToVis}}"
                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
                         CornerRadius="6" Padding="10" Margin="0,0,0,12">
@@ -110,10 +135,20 @@
                             <Button Style="{StaticResource SecondaryButtonStyle}" Content="Clear" Margin="8,0,0,0"
                                     Command="{Binding ClearInitImageCommand}" />
                         </StackPanel>
-                        <TextBlock Text="Denoise strength" Style="{StaticResource FieldLabelStyle}" Margin="0,10,0,4"
-                                   ToolTip="Higher = more change from the input image" />
-                        <Slider Minimum="0.1" Maximum="1.0" Value="{Binding DenoiseStrength}"
-                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                        <!-- Classic img2img: denoise strength -->
+                        <StackPanel Visibility="{Binding ShowDenoiseStrength, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Denoise strength" Style="{StaticResource FieldLabelStyle}" Margin="0,10,0,4"
+                                       ToolTip="Higher = more change from the input image" />
+                            <Slider Minimum="0.1" Maximum="1.0" Value="{Binding DenoiseStrength}"
+                                    TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                        </StackPanel>
+                        <!-- PhotoMaker: identity strength -->
+                        <StackPanel Visibility="{Binding ShowPhotoMaker, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Identity strength" Style="{StaticResource FieldLabelStyle}" Margin="0,10,0,4"
+                                       ToolTip="Higher = stronger face match, less prompt influence on the face" />
+                            <Slider Minimum="1" Maximum="50" Value="{Binding IdentityStrength}"
+                                    TickFrequency="1" IsSnapToTickEnabled="True" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -122,14 +157,54 @@
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Model" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="The AI model doing the work - each has its own style, speed and strengths. Example: “FLUX.2 klein” → fast &amp; modern; “NoobAI XL” → anime (uses booru tags)." />
+                </Border>
                 <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
-                          DisplayMemberPath="DisplayName" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
+                          HorizontalAlignment="Stretch" Margin="0,0,0,4">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding DisplayName, Mode=OneWay}" />
+                                <Run Text="{Binding MemoryLabel, Mode=OneWay}"
+                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <!-- Memory-fit hint: how much GPU/unified memory the model needs at its default
+                     size, turning amber when it likely exceeds the detected GPU's memory. -->
+                <TextBlock Text="{Binding ModelMemoryHint}" TextWrapping="Wrap" FontSize="11"
+                           Margin="2,0,0,12"
+                           Visibility="{Binding HasModelMemoryHint, Converter={StaticResource BoolToVis}}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ModelMemoryExceeded}" Value="True">
+                                    <Setter Property="Foreground" Value="#E0A030" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Explicit-rating switch: only shown for tag-based models that expose one -->
+                <ui:ToggleSwitch Content="Explicit adult content" IsChecked="{Binding ExplicitNsfw}"
+                                 Visibility="{Binding ShowExplicitSwitch, Converter={StaticResource BoolToVis}}"
+                                 ToolTip="Append this model's explicit rating tag (e.g. rating_explicit) to the prompt"
+                                 Margin="0,0,0,12" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                     <fa:IconBlock Icon="Expand" FontSize="10" Margin="0,0,7,0" VerticalAlignment="Center"
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Size" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="Output resolution; bigger = more detail but slower. Only sizes this model handles well are listed. Example: “Square · 1024×1024” → a 1-megapixel square image." />
+                </Border>
                 <ComboBox ItemsSource="{Binding SizePresets}" SelectedItem="{Binding SelectedSize}"
                           DisplayMemberPath="Label" HorizontalAlignment="Stretch" Margin="0,0,0,12" />
 
@@ -145,6 +220,10 @@
                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                             <TextBlock Text="Steps" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                         </StackPanel>
+                        <Border Style="{StaticResource HintBoxStyle}">
+                            <TextBlock Style="{StaticResource HintTextStyle}"
+                                       Text="Denoising passes - more = cleaner detail but slower (diminishing returns). Example: “4” for FLUX.2 klein, “28” for SDXL." />
+                        </Border>
                         <ui:NumberBox Value="{Binding Steps, Mode=TwoWay}" Minimum="1" Maximum="100" />
                     </StackPanel>
                     <StackPanel Grid.Column="2">
@@ -153,6 +232,10 @@
                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                             <TextBlock Text="CFG" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                         </StackPanel>
+                        <Border Style="{StaticResource HintBoxStyle}">
+                            <TextBlock Style="{StaticResource HintTextStyle}"
+                                       Text="How strictly it follows the prompt. Too high can distort. Example: “1” for distilled FLUX/klein, “5” for SDXL." />
+                        </Border>
                         <ui:NumberBox Value="{Binding Cfg, Mode=TwoWay}" Minimum="1" Maximum="20" SmallChange="0.5" />
                     </StackPanel>
                 </Grid>
@@ -163,6 +246,10 @@
                     <TextBlock Text="Seed" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center"
                                ToolTip="-1 = random each time" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="The random starting noise - the same seed + settings reproduces the exact image. Example: “-1” → new random image each run; “42” → repeatable." />
+                </Border>
                 <ui:NumberBox Value="{Binding Seed, Mode=TwoWay}" Minimum="-1" Margin="0,0,0,12" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
@@ -171,6 +258,10 @@
                     <TextBlock Text="Images" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center"
                                ToolTip="How many to generate in one run (each saved to the Gallery)" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="How many images to make in one run - each gets a new seed and is saved to the Gallery. Example: “4” → four variations at once." />
+                </Border>
                 <ui:NumberBox Value="{Binding BatchCount, Mode=TwoWay}" Minimum="1" Maximum="4" Margin="0,0,0,12" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
@@ -178,6 +269,10 @@
                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Sampler" Style="{StaticResource FieldLabelStyle}" Margin="0" VerticalAlignment="Center" />
                 </StackPanel>
+                <Border Style="{StaticResource HintBoxStyle}">
+                    <TextBlock Style="{StaticResource HintTextStyle}"
+                               Text="The denoising algorithm; changes fine texture/feel more than the content. Example: “Euler a” → a reliable default for most models." />
+                </Border>
                 <ComboBox ItemsSource="{Binding Samplers}" SelectedItem="{Binding SelectedSampler}"
                           HorizontalAlignment="Stretch" Margin="0,0,0,4" />
             </StackPanel>
@@ -208,8 +303,10 @@
             </StackPanel>
         </Grid>
 
-        <!-- Preview -->
-        <ui:Card Grid.Column="1">
+        <!-- Preview: bordered image frame (bottom margin mirrors the 28px right margin) -->
+        <Border Grid.Column="1" CornerRadius="10" BorderThickness="1.5" Margin="0,0,0,24"
+                BorderBrush="{DynamicResource ControlStrokeColorSecondaryBrush}"
+                Background="{DynamicResource ControlFillColorDefaultBrush}">
             <Grid>
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <fa:IconBlock Icon="Image" FontSize="42" HorizontalAlignment="Center" Opacity="0.45"
@@ -218,11 +315,12 @@
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                 </StackPanel>
-                <Image Source="{Binding PreviewImage}" Stretch="Uniform" />
+                <Image Source="{Binding PreviewImage}" Stretch="Uniform" Margin="8" />
                 <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48"
                                  HorizontalAlignment="Center" VerticalAlignment="Center"
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
             </Grid>
-        </ui:Card>
+        </Border>
+        </Grid>
     </Grid>
 </Page>

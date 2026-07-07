@@ -483,3 +483,13 @@ $RECYCLE.BIN/
 
 # Portable build output
 dist/
+
+# Local crash logs / scratch images (runtime debris, not source)
+crashes/
+
+# Jekyll website build output
+_site/
+website/.jekyll-cache/
+website/.jekyll-metadata
+website/.bundle/
+website/vendor/

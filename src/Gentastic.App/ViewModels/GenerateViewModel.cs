@@ -6,6 +6,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gentastic.App.Imaging;
+using Gentastic.App.Services;
 using Gentastic.Core.Abstractions;
 using Gentastic.Core.Models;
 using Gentastic.Core.Presets;
@@ -21,10 +22,13 @@ public sealed record ImageSize(string Label, int Width, int Height);
 /// detected runtime and the pending state rather than triggering a large model download.</summary>
 public partial class GenerateViewModel : ObservableObject
 {
+    private readonly IModelCatalog _catalog;
     private readonly IRuntimeDetector _detector;
     private readonly IGenerationService _generationService;
     private readonly IDiffusionEngine _engine;
     private readonly IPresetStore _presetStore;
+    private readonly ISettingsService _settings;
+    private readonly IContentGate _contentGate;
     private CancellationTokenSource? _cts;
 
     public GenerateViewModel(
@@ -33,28 +37,69 @@ public partial class GenerateViewModel : ObservableObject
         IGenerationService generationService,
         IDiffusionEngine engine,
         IPresetStore presetStore,
-        ISettingsService settings)
+        ISettingsService settings,
+        IContentGate contentGate)
     {
+        _catalog = catalog;
         _detector = detector;
         _generationService = generationService;
         _engine = engine;
         _presetStore = presetStore;
+        _settings = settings;
+        _contentGate = contentGate;
 
-        Models = new ObservableCollection<ModelSpec>(
-            catalog.GetAvailableModels().Where(m => !m.IsAdult || settings.Current.ShowAdultModels));
-        _selectedModel = Models.FirstOrDefault();
-        ApplyModelDefaults();
+        RebuildModels();
         LoadPresets();
+
+        // Re-filter the picker live when settings are saved, so toggling "Show adult models" hides or
+        // reveals 18+ models immediately (they used to linger until an app restart because this VM is a
+        // singleton built once).
+        settings.Changed += (_, _) => RebuildModels();
     }
 
-    public ObservableCollection<ModelSpec> Models { get; }
+    public ObservableCollection<ModelSpec> Models { get; } = [];
 
-    public ObservableCollection<ImageSize> SizePresets { get; } =
+    /// <summary>Repopulates <see cref="Models"/> from the catalog, honouring the current adult-model
+    /// visibility. Keeps the current selection if it's still visible; otherwise falls back to the first
+    /// model (so hiding the selected adult model doesn't leave a stale/blank pick).</summary>
+    private void RebuildModels()
+    {
+        var previousId = SelectedModel?.Id;
+        var visible = _catalog.GetAvailableModels()
+            .Where(m => !m.IsAdult || _settings.Current.ShowAdultModels)
+            .ToList();
+
+        Models.Clear();
+        foreach (var model in visible)
+            Models.Add(model);
+
+        SelectedModel = visible.FirstOrDefault(m => m.Id == previousId) ?? visible.FirstOrDefault();
+    }
+
+    /// <summary>Output resolutions valid for the selected model, repopulated on model switch and shown
+    /// alphabetically. SDXL only lists its ~1024² buckets (it distorts badly off-native); FLUX/klein are
+    /// flexible so they also get small/fast + wide options.</summary>
+    public ObservableCollection<ImageSize> SizePresets { get; } = [];
+
+    // SDXL resolution buckets (all ~1 MP). No 512²/1280×720 - those wreck SDXL ("Picasso").
+    private static readonly ImageSize[] SdxlSizes =
     [
         new("Square · 1024×1024", 1024, 1024),
-        new("Portrait · 768×1024", 768, 1024),
-        new("Landscape · 1024×768", 1024, 768),
+        new("Portrait · 832×1216", 832, 1216),
+        new("Portrait · 896×1152", 896, 1152),
+        new("Landscape · 1216×832", 1216, 832),
+        new("Landscape · 1152×896", 1152, 896),
+    ];
+
+    // FLUX / FLUX.2 klein / Kontext are flexible: 1 MP buckets plus fast-small and wide options.
+    private static readonly ImageSize[] FluxSizes =
+    [
+        new("Square · 1024×1024", 1024, 1024),
         new("Square · 512×512", 512, 512),
+        new("Portrait · 768×1024", 768, 1024),
+        new("Portrait · 896×1152", 896, 1152),
+        new("Landscape · 1024×768", 1024, 768),
+        new("Landscape · 1152×896", 1152, 896),
         new("Wide · 1280×720", 1280, 720),
     ];
 
@@ -71,6 +116,11 @@ public partial class GenerateViewModel : ObservableObject
     [ObservableProperty] private double _cfg = 1.0;
     [ObservableProperty] private Sampler _selectedSampler = Sampler.EulerA;
     [ObservableProperty] private int _batchCount = 1;
+    [ObservableProperty] private bool _explicitNsfw;
+    [ObservableProperty] private double _identityStrength = 20;
+
+    /// <summary>Whether the per-field explanation boxes are shown (toggled by the "?" button).</summary>
+    [ObservableProperty] private bool _showHelp = true;
 
     [ObservableProperty] private ImageSource? _previewImage;
 
@@ -110,6 +160,9 @@ public partial class GenerateViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ToggleHelp() => ShowHelp = !ShowHelp;
+
+    [RelayCommand]
     private void BrowseInitImage()
     {
         var dialog = new OpenFileDialog
@@ -136,13 +189,90 @@ public partial class GenerateViewModel : ObservableObject
     public string NegativePromptHint =>
         IsNegativePromptEnabled
             ? string.Empty
-            : "Needs CFG > 1 — base FLUX ignores it otherwise.";
+            : "Needs CFG > 1 - base FLUX ignores it otherwise.";
+
+    /// <summary>The current model exposes an explicit-rating tag (tag-based SDXL models); drives the
+    /// visibility of the "Explicit adult content" switch, hidden for natural-language models (FLUX, photoreal).</summary>
+    public bool ShowExplicitSwitch => SelectedModel?.SupportsExplicitSwitch == true;
+
+    /// <summary>GPU memory the app can realistically use for generation, in GiB. Discrete cards are
+    /// judged by dedicated VRAM (shared system memory is a slow spill, not real headroom); APUs
+    /// (near-zero dedicated) get the unified total. 0 = unknown (no adapter detected).</summary>
+    private double UsableGpuMemoryGiB
+    {
+        get
+        {
+            var adapter = _detector.Detect().RecommendedAdapter;
+            if (adapter is null)
+                return 0;
+            var dedicatedGiB = adapter.DedicatedMemoryBytes / (1024.0 * 1024 * 1024);
+            return dedicatedGiB >= 4 ? dedicatedGiB : adapter.TotalMemoryGiB;
+        }
+    }
+
+    /// <summary>True when the selected model's approximate peak memory exceeds what the GPU offers -
+    /// the hint below the picker turns amber so the user is warned before an OOM, not after.</summary>
+    public bool ModelMemoryExceeded =>
+        SelectedModel is { ApproxMemoryGB: > 0 } m && UsableGpuMemoryGiB is > 0 and var usable
+        && m.ApproxMemoryGB > usable;
+
+    public bool HasModelMemoryHint => SelectedModel is { ApproxMemoryGB: > 0 };
+
+    public string ModelMemoryHint =>
+        SelectedModel is not { ApproxMemoryGB: > 0 } model ? string.Empty
+        : ModelMemoryExceeded
+            ? $"Needs ~{model.ApproxMemoryGB} GB of GPU memory - more than your GPU's ~{UsableGpuMemoryGiB:F0} GB. "
+              + "It may run out of memory; try a smaller size or a smaller model."
+            : $"Needs ~{model.ApproxMemoryGB} GB of GPU memory.";
+
+    /// <summary>PhotoMaker identity model - the input image is a reference face + an identity-strength
+    /// control replaces the denoise slider.</summary>
+    public bool ShowPhotoMaker => SelectedModel?.UsesPhotoMaker == true;
+
+    /// <summary>A FLUX image-editing model (Kontext / FLUX.2 klein) - the input image is the image to edit.</summary>
+    public bool ShowImageEdit => SelectedModel?.IsImageEdit == true;
+
+    /// <summary>Both PhotoMaker and Kontext use the input image as a reference (identity / edit source)
+    /// rather than an img2img noise canvas.</summary>
+    public bool UsesReferenceInput => ShowPhotoMaker || ShowImageEdit;
+
+    public bool ShowEditHint => UsesReferenceInput;
+
+    /// <summary>Show the denoise slider only for classic img2img (hidden for the reference-input modes).</summary>
+    public bool ShowDenoiseStrength => UseInputImage && !UsesReferenceInput;
+
+    public string InputImageToggleLabel =>
+        ShowPhotoMaker ? "Use a reference face" : ShowImageEdit ? "Use an image to edit" : "Image to image";
+
+    public string EditModeHint =>
+        ShowPhotoMaker ? "PhotoMaker keeps this face. Put a class word + \"img\" in the prompt, e.g. \"a woman img, on a beach\"."
+        : ShowImageEdit ? "Describe the change (e.g. \"change the suit to grey\", \"put them on a beach\") - it edits your photo and keeps the face/background."
+        : string.Empty;
 
     partial void OnSelectedModelChanged(ModelSpec? value)
     {
         ApplyModelDefaults();
         NotifyNegativePromptState();
+        // Reset the switch when moving to a model without an explicit tag, and refresh its visibility.
+        if (value?.SupportsExplicitSwitch != true)
+            ExplicitNsfw = false;
+        // PhotoMaker / Kontext both need an input image - show the panel by default when selected.
+        if (value?.UsesPhotoMaker == true || value?.IsImageEdit == true)
+            UseInputImage = true;
+        OnPropertyChanged(nameof(ShowExplicitSwitch));
+        OnPropertyChanged(nameof(HasModelMemoryHint));
+        OnPropertyChanged(nameof(ModelMemoryHint));
+        OnPropertyChanged(nameof(ModelMemoryExceeded));
+        OnPropertyChanged(nameof(ShowPhotoMaker));
+        OnPropertyChanged(nameof(ShowImageEdit));
+        OnPropertyChanged(nameof(UsesReferenceInput));
+        OnPropertyChanged(nameof(ShowEditHint));
+        OnPropertyChanged(nameof(ShowDenoiseStrength));
+        OnPropertyChanged(nameof(InputImageToggleLabel));
+        OnPropertyChanged(nameof(EditModeHint));
     }
+
+    partial void OnUseInputImageChanged(bool value) => OnPropertyChanged(nameof(ShowDenoiseStrength));
 
     partial void OnSelectedSizeChanged(ImageSize value) { /* width/height read on generate */ }
 
@@ -160,6 +290,17 @@ public partial class GenerateViewModel : ObservableObject
             return;
         Steps = SelectedModel.DefaultSteps;
         Cfg = SelectedModel.DefaultCfg;
+        // Show ONLY the resolutions valid for this model's architecture, alphabetically. SDXL distorts
+        // badly ("Picasso") off its ~1024² buckets, so it never offers 512²/1280×720. Repopulated on
+        // every model switch, then snap to the model's native size (like steps/cfg reset).
+        var valid = (SelectedModel.Kind == ModelKind.Sdxl ? SdxlSizes : FluxSizes)
+            .OrderBy(s => s.Label, StringComparer.OrdinalIgnoreCase);
+        SizePresets.Clear();
+        foreach (var size in valid)
+            SizePresets.Add(size);
+        SelectedSize = SizePresets.FirstOrDefault(
+                           s => s.Width == SelectedModel.DefaultWidth && s.Height == SelectedModel.DefaultHeight)
+                       ?? SizePresets[0];
     }
 
     [RelayCommand]
@@ -178,9 +319,25 @@ public partial class GenerateViewModel : ObservableObject
             return;
         }
 
-        if (UseInputImage && InitImage is null)
+        if (UsesReferenceInput && InitImage is null)
+        {
+            StatusMessage = ShowImageEdit
+                ? "Add an image to edit - Kontext needs one."
+                : "Add a reference face photo - PhotoMaker needs one to keep the face.";
+            return;
+        }
+
+        if (UseInputImage && !UsesReferenceInput && InitImage is null)
         {
             StatusMessage = "Add an input image, or turn off image-to-image.";
+            return;
+        }
+
+        // Adult models - and any model that reproduces a real face (PhotoMaker identity / image-edit
+        // "keep face") - require the legal-guardrails acknowledgement before every generation.
+        if (SelectedModel is { RequiresContentAcknowledgement: true } && !_contentGate.ConfirmGenerationAcknowledgement())
+        {
+            StatusMessage = "Generation cancelled - you must acknowledge the terms to use this model.";
             return;
         }
 
@@ -212,7 +369,7 @@ public partial class GenerateViewModel : ObservableObject
 
             LastOutputPath = savedPath;
             StatusMessage = count > 1
-                ? $"Generated {count} images — saved to {OutputDirectory}. See the Gallery."
+                ? $"Generated {count} images - saved to {OutputDirectory}. See the Gallery."
                 : $"Saved to {savedPath}";
         }
         catch (OperationCanceledException)
@@ -268,7 +425,7 @@ public partial class GenerateViewModel : ObservableObject
         {
             var model = Models.FirstOrDefault(m => m.Id == preset.ModelId);
             if (model is not null)
-                SelectedModel = model; // resets steps/cfg to model defaults — overridden below
+                SelectedModel = model; // resets steps/cfg to model defaults - overridden below
         }
 
         var size = SizePresets.FirstOrDefault(s => s.Width == preset.Width && s.Height == preset.Height)
@@ -334,11 +491,32 @@ public partial class GenerateViewModel : ObservableObject
     private GenerationRequest BuildRequest(long seed)
     {
         var negative = string.IsNullOrWhiteSpace(NegativePrompt) ? null : NegativePrompt;
+        // Apply the model's tag prefix (e.g. Pony score tags) and, when the Explicit adult content switch is on,
+        // append its explicit rating tag - saved in metadata and sent to the engine. Models without a
+        // prefix/tag pass the prompt through unchanged.
+        var prompt = SelectedModel?.ComposePrompt(Prompt, ExplicitNsfw) ?? Prompt;
+
+        // PhotoMaker (kept face) and Kontext (edit source): the loaded image is a reference, routed to
+        // ReferenceImage - the engine sends it to PhotoMaker.IdImages or Kontext RefImages by model kind.
+        if (UsesReferenceInput && InitImage is not null)
+            return new TextToImageRequest
+            {
+                Prompt = prompt,
+                NegativePrompt = negative,
+                Width = SelectedSize.Width,
+                Height = SelectedSize.Height,
+                Steps = Steps,
+                Seed = seed,
+                Cfg = (float)Cfg,
+                Sampler = SelectedSampler,
+                ReferenceImage = InitImage,
+                IdentityStrength = (float)IdentityStrength,
+            };
 
         if (UseInputImage && InitImage is not null)
             return new ImageToImageRequest
             {
-                Prompt = Prompt,
+                Prompt = prompt,
                 NegativePrompt = negative,
                 Width = SelectedSize.Width,
                 Height = SelectedSize.Height,
@@ -352,7 +530,7 @@ public partial class GenerateViewModel : ObservableObject
 
         return new TextToImageRequest
         {
-            Prompt = Prompt,
+            Prompt = prompt,
             NegativePrompt = negative,
             Width = SelectedSize.Width,
             Height = SelectedSize.Height,

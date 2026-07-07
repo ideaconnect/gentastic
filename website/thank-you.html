@@ -1,0 +1,25 @@
+---
+layout: default
+title: Thank you
+description: Your message has been sent - thanks for reaching out about Gentastic.
+permalink: /contact/thank-you/
+noindex: true
+sitemap: false
+---
+
+<section class="thankyou">
+  <div class="container container-narrow">
+    <div class="thankyou-inner reveal in-view">
+      <div class="thankyou-icon">{% include icon-check.html %}</div>
+      <h1>Message sent</h1>
+      <p>Thanks for reaching out - your message is on its way to my inbox. I read everything and
+        reply as soon as I can.</p>
+      <div class="thankyou-actions">
+        <a class="btn btn-primary btn-lg" href="{{ '/' | relative_url }}">Back to home</a>
+        <a class="btn btn-secondary btn-lg" href="{{ '/download/' | relative_url }}">
+          {% include icon-download.html %} Download Gentastic
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,4 +1,5 @@
 using System.Windows;
+using Gentastic.App.Services;
 using Gentastic.App.ViewModels;
 using Gentastic.App.Views;
 using Gentastic.Core.Abstractions;
@@ -28,6 +29,27 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Last-resort exception handling: a background bug must not silently kill the whole app.
+        // Managed exceptions on the UI thread are logged + shown and the app keeps running; faults
+        // on background threads are logged. (Native aborts/access violations inside sd.cpp cannot
+        // be caught from managed code - those are prevented by pre-guards in the engine instead.)
+        DispatcherUnhandledException += (_, args) =>
+        {
+            LogCrash("ui", args.Exception);
+            args.Handled = true;
+            MessageBox.Show(
+                $"Unexpected error: {args.Exception.Message}\n\n"
+                + @"A crash log was saved to %LOCALAPPDATA%\Gentastic\crashes.",
+                "Gentastic", MessageBoxButton.OK, MessageBoxImage.Warning);
+        };
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            LogCrash("task", args.Exception);
+            args.SetObserved();
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            LogCrash("fatal", args.ExceptionObject as Exception);
+
         // Screenshot/CI mode: render in software so a plain screen-grab captures the real content
         // (hardware-composited WPF + Mica otherwise defeats window capture).
         if (Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") == "1")
@@ -49,6 +71,22 @@ public partial class App : Application
             return;
         }
 
+        // Screenshot harness for the adult-content confirmation modals. GENTASTIC_SHOT_DIALOG starts with
+        // "age" or "ack"; append "-checked" (e.g. "ack-checked") to pre-tick the boxes so the enabled
+        // button state can be captured.
+        var shotDialog = Environment.GetEnvironmentVariable("GENTASTIC_SHOT_DIALOG");
+        if (shotDialog is not null)
+        {
+            Window? dialog = shotDialog.StartsWith("age") ? new AgeConfirmationDialog()
+                : shotDialog.StartsWith("ack") ? new AdultAcknowledgementDialog()
+                : null;
+            if (dialog is not null)
+            {
+                dialog.ShowDialog();
+                return;
+            }
+        }
+
         // First run: let the user confirm the auto-detected compute runtime (CUDA → ROCm → Vulkan →
         // CPU). Skipped once confirmed, and during headless screenshot/auto-gen runs (it would block).
         var headless = Environment.GetEnvironmentVariable("GENTASTIC_SCREENSHOT") == "1"
@@ -66,6 +104,26 @@ public partial class App : Application
         await _host.StopAsync();
         _host.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>Writes an unhandled exception to %LOCALAPPDATA%\Gentastic\crashes. Never throws -
+    /// the crash logger must not be able to crash the crash handling.</summary>
+    private static void LogCrash(string kind, Exception? exception)
+    {
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Gentastic", "crashes");
+            System.IO.Directory.CreateDirectory(dir);
+            System.IO.File.WriteAllText(
+                System.IO.Path.Combine(dir, $"crash-{DateTime.Now:yyyyMMdd-HHmmss}-{kind}.txt"),
+                $"{DateTime.Now:O} [{kind}]\n{exception}\n");
+        }
+        catch
+        {
+            // best effort only
+        }
     }
 }
 
@@ -110,11 +168,14 @@ internal static class HostBuilderExtensions
         });
         services.AddSingleton<IUpdateService, GitHubUpdateService>();
 
+        // Adult-content confirmation modals (age gate + per-generation acknowledgement).
+        services.AddSingleton<IContentGate, ContentGate>();
+
         // Shell.
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainWindowViewModel>();
 
-        // Runtime-detection dialog (transient — shown at first run and re-openable from Settings).
+        // Runtime-detection dialog (transient - shown at first run and re-openable from Settings).
         services.AddTransient<RuntimeDialog>();
         services.AddTransient<RuntimeDialogViewModel>();
         services.AddTransient<Func<RuntimeDialog>>(sp => sp.GetRequiredService<RuntimeDialog>);
@@ -128,6 +189,8 @@ internal static class HostBuilderExtensions
         services.AddSingleton<GalleryViewModel>();
         services.AddSingleton<SettingsPage>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<AboutPage>();
+        services.AddSingleton<AboutViewModel>();
 
         return builder;
     }

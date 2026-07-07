@@ -3,16 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+      xmlns:ctrl="clr-namespace:Gentastic.App.Controls"
       Title="Settings">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28,20,28,20" MaxWidth="720" HorizontalAlignment="Left">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-                <fa:IconBlock Icon="Gear" FontSize="19" VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
-                <TextBlock Text="Settings" FontSize="21" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
+        <StackPanel Margin="28,4,28,20" MaxWidth="720" HorizontalAlignment="Left">
+            <ctrl:PageHeader Title="Settings" Icon="Gear" />
 
             <!-- Runtime -->
             <ui:Card Padding="18" Margin="0,0,0,12">
@@ -59,7 +57,7 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- On-demand CUDA runtime — lets NVIDIA users run CUDA with no CUDA Toolkit install. -->
+                    <!-- On-demand CUDA runtime - lets NVIDIA users run CUDA with no CUDA Toolkit install. -->
                     <StackPanel Margin="0,14,0,0"
                                 Visibility="{Binding HasCudaRuntimeSection, Converter={StaticResource BoolToVis}}">
                         <Button Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
@@ -99,7 +97,7 @@
                         <TextBlock Text="Content" FontWeight="SemiBold" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <ui:ToggleSwitch Content="Show adult models (18+)" IsChecked="{Binding ShowAdultModels}"
-                                     ToolTip="Reveals adult-only models in the picker and manager. Applies after restart." />
+                                     ToolTip="Reveals adult-only models in the picker and manager. Applies as soon as you save." />
                 </StackPanel>
             </ui:Card>
 
@@ -115,7 +113,7 @@
                         <Run Text="On disk: " /><Run Text="{Binding CacheSize}" />
                     </TextBlock>
                     <TextBlock Text="CACHE FOLDER" Style="{StaticResource FieldLabelStyle}"
-                               ToolTip="Blank = default location. Applies after restart." />
+                               ToolTip="Blank = default location. Applies after you restart the app." />
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

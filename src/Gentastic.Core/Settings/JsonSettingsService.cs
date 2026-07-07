@@ -18,6 +18,8 @@ public sealed class JsonSettingsService : ISettingsService
 
     public AppSettings Current { get; }
 
+    public event EventHandler? Changed;
+
     public JsonSettingsService(string? path = null)
     {
         SettingsPath = path ?? Path.Combine(
@@ -36,7 +38,7 @@ public sealed class JsonSettingsService : ISettingsService
         }
         catch
         {
-            // Corrupt or unreadable settings — start from defaults rather than crash.
+            // Corrupt or unreadable settings - start from defaults rather than crash.
         }
 
         return new AppSettings();
@@ -46,5 +48,6 @@ public sealed class JsonSettingsService : ISettingsService
     {
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
         File.WriteAllText(SettingsPath, JsonSerializer.Serialize(Current, Options));
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

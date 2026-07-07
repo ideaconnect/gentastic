@@ -31,6 +31,28 @@ public class SettingsServiceTests
     }
 
     [Fact]
+    public void Save_RaisesChanged()
+    {
+        var path = TempPath();
+        try
+        {
+            var svc = new JsonSettingsService(path);
+            var raised = 0;
+            svc.Changed += (_, _) => raised++;
+
+            svc.Current.ShowAdultModels = true;
+            svc.Save();
+
+            // The model pickers listen to this to re-filter adult models live (no app restart).
+            raised.ShouldBe(1);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void Load_MissingFile_ReturnsDefaults()
     {
         var svc = new JsonSettingsService(TempPath());

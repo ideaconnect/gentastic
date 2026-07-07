@@ -5,7 +5,7 @@ public enum GenerationBackend
 {
     /// <summary>CPU fallback. Always available, slow.</summary>
     Cpu,
-    /// <summary>Vulkan compute — the preferred path on AMD (incl. Strix Halo / Radeon 8060S).</summary>
+    /// <summary>Vulkan compute - the preferred path on AMD (incl. Strix Halo / Radeon 8060S).</summary>
     Vulkan,
     /// <summary>NVIDIA CUDA.</summary>
     Cuda,

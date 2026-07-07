@@ -1,0 +1,54 @@
+{% assign page_title = page.title | default: site.title %}
+{% unless page.url == '/' %}{% assign page_title = page_title | append: ' · Gentastic' %}{% endunless %}
+{% assign page_description = page.description | default: site.description %}
+{% assign og_image = page.og_image | default: '/assets/img/brand/og-image.png' %}
+
+<title>{{ page_title }}</title>
+<meta name="description" content="{{ page_description }}" />
+<link rel="canonical" href="{{ page.url | absolute_url }}" />
+{% if page.noindex %}<meta name="robots" content="noindex, follow" />{% endif %}
+
+<link rel="icon" href="{{ '/assets/img/brand/favicon.ico' | relative_url }}" sizes="any" />
+<link rel="icon" type="image/png" href="{{ '/assets/img/brand/icon-192.png' | relative_url }}" sizes="192x192" />
+<link rel="apple-touch-icon" href="{{ '/assets/img/brand/apple-touch-icon.png' | relative_url }}" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Gentastic" />
+<meta property="og:title" content="{{ page_title }}" />
+<meta property="og:description" content="{{ page_description }}" />
+<meta property="og:url" content="{{ page.url | absolute_url }}" />
+<meta property="og:image" content="{{ og_image | absolute_url }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ page_title }}" />
+<meta name="twitter:description" content="{{ page_description }}" />
+<meta name="twitter:image" content="{{ og_image | absolute_url }}" />
+
+<meta name="theme-color" content="#0b0c10" />
+
+{% if page.url == '/' %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Gentastic",
+  "operatingSystem": "Windows 10, Windows 11",
+  "applicationCategory": "MultimediaApplication",
+  "description": {{ site.description | jsonify }},
+  "url": "{{ site.url }}{{ site.baseurl }}/",
+  "downloadUrl": "{{ site.releases }}",
+  "author": {
+    "@type": "Organization",
+    "name": "IDCT",
+    "url": "{{ site.hub }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+{% endif %}

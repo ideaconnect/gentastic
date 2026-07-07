@@ -1,0 +1,228 @@
+---
+layout: default
+title: Features
+description: >-
+  Every Gentastic feature: text-to-image and image-to-image, face-keeping identity generation,
+  instruction-based editing, automatic model downloads, CUDA/Vulkan runtime detection, presets,
+  gallery, and more.
+---
+
+<section style="padding-top: 56px;">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Features</p>
+      <h1>Everything Gentastic does</h1>
+      <p>Built as a focused alternative to node-graph tools - every feature below works from sane
+        defaults, with an optional hint box explaining what each field does.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Generation</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Text-to-image</h3>
+        <p>Prompt + negative prompt, seed control, and every advanced slider you'd want - all with
+          working defaults, so you only touch what you want to change.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-arrow.html %}</div>
+        <h3>Image-to-image</h3>
+        <p>Drag &amp; drop an input image, set a denoise strength, and let any supported model reimagine
+          it from your prompt.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-download.html %}</div>
+        <h3>Instruction-based editing</h3>
+        <p>FLUX.1 Kontext and FLUX.2 klein editing models take an instruction - "change the suit to
+          grey", "put them on a beach" - and edit the photo while preserving the rest.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-shield.html %}</div>
+        <h3>Keep-face identity lock</h3>
+        <p>PhotoMaker-based models generate a specific person - from one reference photo - in new
+          scenes, without changing their face. No training, no LoRA to bake.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-sliders.html %}</div>
+        <h3>Per-model resolution presets</h3>
+        <p>Switching models only offers resolutions that actually work well for it - SDXL's native
+          buckets, FLUX's flexible sizes - so you can't accidentally pick a size that distorts the
+          output.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Presets</h3>
+        <p>Save the current prompt and every parameter under a name, and restore the whole setup in
+          one click next time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Models</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-download.html %}</div>
+        <h3>One-click model downloads</h3>
+        <p>Pick a model and Gentastic fetches it from Hugging Face with progress, resumable
+          downloads, and license/token gating for restricted models like FLUX.1-dev.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>FLUX.1 &amp; FLUX.2 klein</h3>
+        <p>schnell and dev variants, plus the newer, faster FLUX.2 klein (the default - about 4 steps
+          to a finished image).</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-arrow.html %}</div>
+        <h3>SDXL &amp; fine-tunes</h3>
+        <p>Photoreal and anime-focused SDXL checkpoints, each with the quality tags they expect
+          applied automatically - you don't need to know what they are or type them yourself.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-gauge.html %}</div>
+        <h3>Quantized GGUF for FLUX</h3>
+        <p>FLUX models ship as GGUF at multiple quantization levels (Q4-Q8, F16) - smaller
+          downloads and predictable memory use. SDXL checkpoints load as single files, as usual
+          for that format.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-layers.html %}</div>
+        <h3>Model manager</h3>
+        <p>See what's installed, how much disk it uses, download or delete any model - all from one
+          page, with your cache folder configurable in Settings.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Negative prompts that actually work</h3>
+        <p>The negative-prompt box only lights up for models where it does something - so you're
+          never left typing into a field that's silently being ignored.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Runtime &amp; performance</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Automatic backend detection</h3>
+        <p>Gentastic probes CUDA, Vulkan, and CPU on first run and picks the fastest one your GPU
+          actually supports - override it any time in Settings.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-download.html %}</div>
+        <h3>On-demand CUDA runtime</h3>
+        <p>No CUDA Toolkit on your machine? Gentastic can download a ~570&nbsp;MB CUDA runtime just for
+          itself - nothing system-wide to install.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-arrow.html %}</div>
+        <h3>Live progress</h3>
+        <p>Per-step progress with a distinct "decoding" phase, plus one-click cancel on any
+          generation.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-gauge.html %}</div>
+        <h3>Out-of-memory guidance</h3>
+        <p>If a generation runs out of VRAM, Gentastic tells you what changed the odds - smaller size,
+          fewer steps, a lower-quant model - instead of a bare stack trace.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Workflow &amp; quality of life</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-layers.html %}</div>
+        <h3>Gallery with real metadata</h3>
+        <p>Every save embeds prompt, negative prompt, model, seed, steps, CFG and sampler directly in
+          the PNG - browse your history and see exactly how each image was made.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Instant thumbnails</h3>
+        <p>A disk-backed thumbnail cache keeps the Gallery snappy even with hundreds of generations.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-arrow.html %}</div>
+        <h3>Built-in field guidance</h3>
+        <p>Every field has an optional hint box explaining what it does, with a concrete example -
+          toggle it off once you know the app.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-sliders.html %}</div>
+        <h3>Dark, Light &amp; System themes</h3>
+        <p>A modern Fluent-style interface (WPF-UI) that follows Windows' theme, or stays fixed to
+          whichever you prefer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Interface</p>
+      <h2>A real app, not a browser tab</h2>
+      <p>Native WPF, not Electron - the window opens instantly and feels like Windows software
+        because it is Windows software.</p>
+    </div>
+
+    <div class="shot-grid">
+      <div class="shot-card reveal">
+        <img src="{{ '/assets/img/screenshots/generate.png' | relative_url }}" alt="The Generate page: prompt, negative prompt, model picker, and live preview" width="1180" height="780" loading="lazy" />
+        <div class="shot-card-body">
+          <h3>Generate</h3>
+          <p>Prompt, model, size and steps on the left; a live preview on the right. Hint boxes explain
+            every field until you turn them off.</p>
+        </div>
+      </div>
+      <div class="shot-card reveal">
+        <img src="{{ '/assets/img/screenshots/models.png' | relative_url }}" alt="The Models page: installed and available models with one-click download" width="1180" height="780" loading="lazy" />
+        <div class="shot-card-body">
+          <h3>Models</h3>
+          <p>Every model in one list - installed state, quantization, license, and a one-click
+            download or delete.</p>
+        </div>
+      </div>
+      <div class="shot-card reveal">
+        <img src="{{ '/assets/img/screenshots/settings.png' | relative_url }}" alt="The Settings page: runtime backend, theme, and content options" width="1180" height="780" loading="lazy" />
+        <div class="shot-card-body">
+          <h3>Settings</h3>
+          <p>Runtime backend and detected hardware, cache location, theme, and the adult-content
+            visibility toggle - all in one place.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container reveal">
+    <h2>See it running on real hardware</h2>
+    <div class="btn-row">
+      <a class="btn btn-primary btn-lg" href="{{ '/examples/' | relative_url }}">Browse examples {% include icon-arrow.html %}</a>
+      <a class="btn btn-ghost btn-lg" href="{{ '/download/' | relative_url }}">{% include icon-download.html %} Download</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,139 @@
+---
+layout: default
+title: Download
+description: Download Gentastic for Windows - a self-contained portable ZIP, no installer and no separate .NET install required.
+---
+
+<section style="padding-top: 56px; padding-bottom: 40px;">
+  <div class="container container-narrow">
+    <div class="section-head reveal">
+      <p class="eyebrow">Download</p>
+      <h1>Get Gentastic for Windows</h1>
+      <p>One portable ZIP. No installer, no separate .NET runtime, no Python. Unzip it, run the
+        exe, and Gentastic detects your GPU automatically.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container container-narrow">
+    <h2 class="sr-only">Download options</h2>
+    <div class="download-grid">
+      <div class="download-card reveal">
+        <h3>Portable build (recommended)</h3>
+        <p>A single self-contained ZIP bundling the CPU, Vulkan and NVIDIA CUDA 12 backends - the
+          same download works on AMD, Intel and NVIDIA GPUs. Gentastic auto-detects the fastest one
+          available.</p>
+        <a class="btn btn-primary btn-lg btn-block" href="{{ site.releases }}" target="_blank" rel="noopener">
+          {% include icon-download.html %} Get the latest release
+        </a>
+        <p style="font-size:12.5px; color:var(--text-faint); margin-top:12px; margin-bottom:0;">
+          Opens the GitHub Releases page - grab the newest <code>Gentastic-portable-win-x64.zip</code>.
+        </p>
+      </div>
+
+      <div class="download-card reveal">
+        <h3>Requirements</h3>
+        <table class="req-table">
+          <tr><td>OS</td><td>Windows 10 or 11, 64-bit</td></tr>
+          <tr><td>GPU</td><td>NVIDIA (CUDA) or AMD/Intel (Vulkan) recommended. CPU-only works, just
+            much slower.</td></tr>
+          <tr><td>.NET</td><td>Bundled - nothing to install separately</td></tr>
+          <tr><td>Disk</td><td>~310&nbsp;MB for the app; a few GB per model you download</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container container-narrow">
+    <div class="callout callout-warn reveal">
+      {% include icon-warning.html %}
+      <div>
+        <h2>Before you download: this app can generate adult content</h2>
+        <p>Gentastic ships with optional, opt-in models capable of explicit adult imagery, and a
+          "keep-face" identity feature that can place a real person's likeness into a generated
+          scene. They're hidden by default and gated behind an age confirmation and a
+          per-generation acknowledgement - no depicting minors, no real people other than yourself,
+          no deepfakes, and you remain legally responsible for what you generate even though the app
+          runs entirely offline. <a href="#responsible-use">Read the full policy below</a> before
+          you install.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container container-narrow">
+    <div class="section-head reveal">
+      <h2>Getting started</h2>
+    </div>
+    <ol class="step-list reveal">
+      <li><strong>Download &amp; unzip</strong> the portable ZIP anywhere - no admin rights needed.</li>
+      <li><strong>Run Gentastic.App.exe.</strong> On first launch it detects your GPU and recommends a
+        backend (CUDA, Vulkan, or CPU) - confirm or override it.</li>
+      <li><strong>Open the Models page</strong> and download a model. FLUX.2 klein 4B is the default -
+        small, fast, and needs no license token.</li>
+      <li><strong>Go to Generate,</strong> type a prompt, and hit Generate. That's the whole workflow.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="responsible-use">
+  <div class="container container-narrow">
+    <div class="section-head reveal">
+      <p class="eyebrow">Before you install</p>
+      <h2>Responsible use</h2>
+    </div>
+
+    <div class="callout callout-warn reveal">
+      {% include icon-warning.html %}
+      <div>
+        <h3>This application can generate adult content</h3>
+        <p>Gentastic ships with optional, opt-in models capable of generating explicit adult
+          imagery, and with a "keep-face" identity feature that can place a real person's likeness
+          into a generated scene. This section is a warning and a policy disclosure, not a feature
+          pitch - read it before you install.</p>
+        <ul>
+          <li>Adult models are <strong>hidden by default.</strong> Enabling them requires an explicit
+            confirmation that you are of legal age to view adult content in your jurisdiction.</li>
+          <li>Every generation using an adult or identity-locked model requires you to acknowledge,
+            each time: no depicting minors, no real people other than yourself, no deepfakes, and
+            that you remain legally responsible for what you generate - even though the app runs
+            entirely offline on your own machine.</li>
+          <li>Gentastic performs no content moderation of what you type or generate. Responsibility
+            for compliance with the law in your jurisdiction is yours alone.</li>
+        </ul>
+        <div class="callout-shot-row">
+          <img class="callout-shot" src="{{ '/assets/img/screenshots/dialog-age.png' | relative_url }}"
+               alt="The age-confirmation dialog shown once, when enabling adult models" width="520" height="330" loading="lazy" />
+          <img class="callout-shot" src="{{ '/assets/img/screenshots/dialog-ack.png' | relative_url }}"
+               alt="The acknowledgement dialog shown before every adult or identity-locked generation, with four checkboxes that must all be ticked to continue" width="560" height="470" loading="lazy" />
+        </div>
+        <p>If you're not comfortable with that, the default, general-purpose models cover
+          text-to-image, image-to-image, and photo editing without any of this - and that's most of
+          what most people use Gentastic for.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container container-narrow">
+    <div class="section-head center reveal">
+      <p class="eyebrow">Support the project</p>
+      <h2>Gentastic is free &amp; open source</h2>
+      <p>No account, no subscription, no ads. If it's useful to you, these help keep it going.</p>
+    </div>
+
+    <div class="btn-row" style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+      <a class="btn btn-secondary btn-lg" href="{{ site.sponsors }}" target="_blank" rel="noopener">
+        {% include icon-sponsor.html %} Sponsor on GitHub
+      </a>
+      <a class="btn btn-secondary btn-lg" href="{{ site.coffee }}" target="_blank" rel="noopener">
+        {% include icon-coffee.html %} Buy me a coffee
+      </a>
+    </div>
+  </div>
+</section>

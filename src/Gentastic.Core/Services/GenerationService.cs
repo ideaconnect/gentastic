@@ -41,9 +41,13 @@ public sealed class GenerationService(
             await engine.LoadModelAsync(installation, hardware, ct).ConfigureAwait(false);
         }
 
-        // 3. Sample.
-        var sampling = new Progress<GenerationProgress>(g => progress?.Report(new GenerationStatus(
-            GenerationStage.Sampling, g.Fraction, $"Sampling step {g.Step}/{g.TotalSteps}")));
+        // 3. Sample (then decode). The engine emits a Decoding marker after the last sampling step so
+        // the VAE decode (a separate, un-stepped native stage - seconds on the GPU, tens of seconds
+        // when it falls back to the CPU) isn't a mystery wait on a bar frozen at the final step.
+        var sampling = new Progress<GenerationProgress>(g => progress?.Report(
+            g.Stage == GenerationProgress.DecodingStage
+                ? new GenerationStatus(GenerationStage.Decoding, 1, "Decoding image (VAE)… almost there")
+                : new GenerationStatus(GenerationStage.Sampling, g.Fraction, $"Sampling step {g.Step}/{g.TotalSteps}")));
 
         var image = request switch
         {

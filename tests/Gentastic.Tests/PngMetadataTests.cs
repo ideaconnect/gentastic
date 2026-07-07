@@ -7,7 +7,7 @@ namespace Gentastic.Tests;
 
 public class PngMetadataTests
 {
-    // A structurally valid PNG skeleton (signature + IHDR + IEND). CRCs are placeholders — PngMetadata
+    // A structurally valid PNG skeleton (signature + IHDR + IEND). CRCs are placeholders - PngMetadata
     // navigates by chunk length/type and does not validate them, so this is enough to exercise it.
     private static byte[] SkeletonPng()
     {
@@ -33,7 +33,7 @@ public class PngMetadataTests
     {
         (string, string)[] entries =
         [
-            ("prompt", "a café façade — 日本語 🎨"),
+            ("prompt", "a café façade - 日本語 🎨"),
             ("seed", "42"),
         ];
 
@@ -43,7 +43,7 @@ public class PngMetadataTests
         withMeta.Length.ShouldBeGreaterThan(SkeletonPng().Length);
 
         var read = PngMetadata.ReadTextChunks(withMeta);
-        read.ShouldContain(e => e.Keyword == "prompt" && e.Text == "a café façade — 日本語 🎨");
+        read.ShouldContain(e => e.Keyword == "prompt" && e.Text == "a café façade - 日本語 🎨");
         read.ShouldContain(e => e.Keyword == "seed" && e.Text == "42");
     }
 

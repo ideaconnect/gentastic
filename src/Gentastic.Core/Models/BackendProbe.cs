@@ -3,7 +3,7 @@ namespace Gentastic.Core.Models;
 /// <summary>Whether a compute backend can actually be used on this machine right now.</summary>
 public enum BackendAvailability
 {
-    /// <summary>Bundled with the app, its runtime is present, and matching hardware was found —
+    /// <summary>Bundled with the app, its runtime is present, and matching hardware was found -
     /// ready to select.</summary>
     Ready,
 

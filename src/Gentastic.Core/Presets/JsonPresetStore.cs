@@ -33,7 +33,7 @@ public sealed class JsonPresetStore : IPresetStore
         }
         catch
         {
-            // Corrupt file — start empty rather than crash.
+            // Corrupt file - start empty rather than crash.
         }
 
         return [];

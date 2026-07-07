@@ -1,0 +1,32 @@
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="{{ '/assets/img/brand/logo.png' | relative_url }}" alt="" width="34" height="34" />
+      <span>Gentastic</span>
+    </div>
+
+    <nav class="footer-links" aria-label="Footer">
+      <a href="{{ '/features/' | relative_url }}">Features</a>
+      <a href="{{ '/examples/' | relative_url }}">Examples</a>
+      <a href="{{ '/roadmap/' | relative_url }}">Roadmap</a>
+      <a href="{{ '/download/' | relative_url }}">Download</a>
+      <a href="{{ site.repo }}" target="_blank" rel="noopener">GitHub</a>
+      <a href="{{ site.issues }}" target="_blank" rel="noopener">Report an issue</a>
+      <a href="{{ '/contact/' | relative_url }}">Contact</a>
+    </nav>
+
+    <div class="footer-support">
+      <a class="btn btn-ghost btn-sm" href="{{ site.sponsors }}" target="_blank" rel="noopener">
+        {% include icon-sponsor.html %} Sponsor
+      </a>
+      <a class="btn btn-ghost btn-sm" href="{{ site.coffee }}" target="_blank" rel="noopener">
+        {% include icon-coffee.html %} Buy me a coffee
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>&copy; {{ 'now' | date: "%Y" }} {{ site.copyright }}</span>
+    <a href="{{ site.hub }}" target="_blank" rel="noopener">idct.tech</a>
+  </div>
+</footer>

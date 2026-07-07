@@ -14,7 +14,7 @@ public sealed record CudaDownloadProgress(int FileIndex, int FileCount, long Byt
 /// runtime libraries on demand (kept out of the base build to keep it small).
 ///
 /// The bundled CUDA backend native (runtimes/win-x64/native/cuda12/stable-diffusion.dll) dynamically links
-/// cudart64_12.dll and cuBLAS (cublas64_12 + cublasLt64_12). Those are NVIDIA redistributables — we fetch
+/// cudart64_12.dll and cuBLAS (cublas64_12 + cublasLt64_12). Those are NVIDIA redistributables - we fetch
 /// them from NVIDIA's official redist archive into %LOCALAPPDATA%\Gentastic\cuda-runtime, write a version.json
 /// so StableDiffusion.NET's CudaBackend detects "CUDA 12", and at startup point CUDA_PATH + the DLL search
 /// path at that folder. The driver API (nvcuda.dll) ships with the NVIDIA driver, so nothing else is needed.
@@ -23,7 +23,7 @@ public sealed class CudaRuntime
 {
     private const string RedistBase = "https://developer.download.nvidia.com/compute/cuda/redist";
 
-    // CUDA 12.8 redistributables — the toolkit version the backend native was built against (12.8.1).
+    // CUDA 12.8 redistributables - the toolkit version the backend native was built against (12.8.1).
     private static readonly (string Url, string[] Dlls)[] Components =
     [
         ($"{RedistBase}/cuda_cudart/windows-x86_64/cuda_cudart-windows-x86_64-12.8.90-archive.zip",
@@ -56,7 +56,7 @@ public sealed class CudaRuntime
         if (!IsInstalled)
             return;
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CUDA_PATH")))
-            return; // a real CUDA Toolkit is installed — leave it alone
+            return; // a real CUDA Toolkit is installed - leave it alone
 
         Environment.SetEnvironmentVariable("CUDA_PATH", Directory);
         var path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
