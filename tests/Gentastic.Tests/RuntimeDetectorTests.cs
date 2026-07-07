@@ -1,3 +1,4 @@
+using System.Linq;
 using Gentastic.Core.Models;
 using Gentastic.Hardware;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,17 +18,24 @@ public class RuntimeDetectorTests(ITestOutputHelper output)
         var profile = detector.Detect();
 
         profile.ShouldNotBeNull();
+        profile.BackendProbes.ShouldNotBeEmpty();
 
-        // Recommendation must agree with what was detected, regardless of the host (CI has no GPU).
-        if (profile.Adapters.Count == 0)
+        // Host-agnostic invariant: the recommendation is the highest-priority Ready backend, or CPU as
+        // the guaranteed fallback. This holds everywhere - a Vulkan-capable dev box recommends Vulkan, a
+        // headless CI runner with no GPU/Vulkan runtime recommends CPU. (Don't hardcode a backend: CI
+        // has no accelerator.)
+        var expected = profile.BackendProbes.FirstOrDefault(p => p.IsReady)?.Backend ?? GenerationBackend.Cpu;
+        profile.RecommendedBackend.ShouldBe(expected);
+
+        // The recommended backend must be one that was actually probed.
+        profile.ProbeFor(profile.RecommendedBackend).ShouldNotBeNull();
+
+        // A GPU-backend recommendation implies a chosen adapter that is one of the detected adapters;
+        // CPU carries no adapter requirement.
+        if (profile.RecommendedBackend != GenerationBackend.Cpu)
         {
-            profile.RecommendedBackend.ShouldBe(GenerationBackend.Cpu);
-            profile.RecommendedAdapter.ShouldBeNull();
-        }
-        else
-        {
-            profile.RecommendedBackend.ShouldBe(GenerationBackend.Vulkan);
             profile.RecommendedAdapter.ShouldNotBeNull();
+            profile.Adapters.ShouldContain(profile.RecommendedAdapter!);
         }
 
         foreach (var adapter in profile.Adapters)
