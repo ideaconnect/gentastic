@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Gentastic.App/Gentastic.App.csproj" />
+    <Project Path="src/Gentastic.Core/Gentastic.Core.csproj" />
+    <Project Path="src/Gentastic.Engine/Gentastic.Engine.csproj" />
+    <Project Path="src/Gentastic.Hardware/Gentastic.Hardware.csproj" />
+    <Project Path="src/Gentastic.Models/Gentastic.Models.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gentastic.Tests/Gentastic.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Gentastic.Smoke/Gentastic.Smoke.csproj" />
+  </Folder>
+</Solution>

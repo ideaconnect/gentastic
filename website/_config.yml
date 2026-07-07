@@ -1,0 +1,47 @@
+title: Gentastic
+tagline: Local AI image generation. No workflows to learn.
+description: >-
+  Gentastic is a free, local Windows app for FLUX and SDXL image generation - text-to-image,
+  image-to-image, face-keeping identity, and image editing. CUDA and Vulkan accelerated, runs
+  entirely on your own GPU. No Python, no ComfyUI graphs, no account.
+author: Bartosz Pachołek
+copyright: "IDCT &middot; Bartosz Pachołek"
+
+url: "https://idct.tech"
+baseurl: "/gentastic"
+permalink: pretty
+
+repo: https://github.com/ideaconnect/gentastic
+releases: https://github.com/ideaconnect/gentastic/releases
+issues: https://github.com/ideaconnect/gentastic/issues
+sponsors: https://github.com/sponsors/ideaconnect
+coffee: https://buymeacoffee.com/idct
+contact_email: bartosz@idct.tech
+hub: https://idct.tech
+
+nav:
+  - title: Features
+    url: /features/
+  - title: Examples
+    url: /examples/
+  - title: Roadmap
+    url: /roadmap/
+  - title: Download
+    url: /download/
+  - title: Contact
+    url: /contact/
+
+# Self-contained: custom layouts + hand-rolled CSS only, no gem themes or plugins -
+# keeps the build fast and portable (same approach as the Helena and NUTS sites).
+plugins: []
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - tools

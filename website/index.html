@@ -1,0 +1,224 @@
+---
+layout: default
+title: Gentastic - Local AI image generation, no workflows to learn
+description: >-
+  A free Windows app for FLUX and SDXL image generation. Type a prompt, pick a model, hit
+  Generate - no node graphs, no Python, no account. CUDA and Vulkan accelerated, runs entirely
+  on your own GPU.
+---
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-blob b1"></div>
+    <div class="hero-blob b2"></div>
+    <div class="hero-blob b3"></div>
+    <div class="hero-sparkles"></div>
+  </div>
+
+  <div class="container hero-grid">
+    <div class="reveal in-view">
+      <div class="hero-badges">
+        <span class="pill"><span class="dot"></span> Free &amp; open source</span>
+        <span class="pill">Windows · CUDA &amp; Vulkan</span>
+        <span class="pill">No Python, no Electron</span>
+      </div>
+
+      <h1>The <span class="hero-gradient-text">easiest way</span> to run FLUX &amp; SDXL on your own GPU</h1>
+
+      <p class="hero-lede">
+        Gentastic is a native Windows app for local AI image generation. No ComfyUI node graphs,
+        no config files, no workflows to understand - pick a model, type a prompt, hit Generate.
+        Everything runs on your own hardware.
+      </p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="{{ '/download/' | relative_url }}">
+          {% include icon-download.html %} Download for Windows
+        </a>
+        <a class="btn btn-secondary btn-lg" href="{{ '/examples/' | relative_url }}">
+          See what it makes
+        </a>
+      </div>
+
+      <p class="hero-note">
+        <strong>Free, no installer required</strong> - one portable ZIP, unzip and run.
+      </p>
+    </div>
+
+    <div class="hero-visual reveal in-view">
+      <div class="window-frame">
+        <div class="window-titlebar"><span></span><span></span><span></span></div>
+        <img src="{{ '/assets/img/examples/tiger.jpg' | relative_url }}" alt="A photorealistic tiger walking through golden grass, generated locally by Gentastic" width="1024" height="1024" loading="eager" />
+      </div>
+      <div class="float-card fc-1">
+        <span class="fc-icon">{% include icon-check.html %}</span>
+        <div><small>Generated in</small>~10s on a mid-range GPU</div>
+      </div>
+      <div class="float-card fc-2">
+        <span class="fc-icon">{% include icon-check.html %}</span>
+        <div><small>Model</small>FLUX.2 klein 4B · 4 steps</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stat-strip">
+  <div class="container stat-grid">
+    <div class="reveal">
+      <strong>0</strong><span>Node graphs to learn</span>
+      <small>No ComfyUI-style wiring of nodes into a workflow - just a prompt box and a Generate button.</small>
+    </div>
+    <div class="reveal">
+      <strong>1</strong><span>Portable ZIP, no installer</span>
+      <small>Unzip it anywhere and run - no setup wizard, no admin rights.</small>
+    </div>
+    <div class="reveal">
+      <strong>2</strong><span>GPU backends today</span>
+      <small>CUDA and Vulkan, auto-detected - CPU works too, just slower.</small>
+    </div>
+    <div class="reveal">
+      <strong>Offline</strong><span>No cloud, no per-image cost</span>
+      <small>Every image is generated on your own machine, never uploaded.</small>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head center reveal">
+      <p class="eyebrow">Why Gentastic</p>
+      <h2>Everything you need, none of the setup</h2>
+      <p>Sane defaults for every field, so you can start generating before you know what CFG or a
+        sampler even is.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-download.html %}</div>
+        <h3>Zero-config models</h3>
+        <p>Pick a model from the list and Gentastic downloads it from Hugging Face, verifies it, and
+          snaps steps/CFG/resolution to sane defaults automatically.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Text-to-image &amp; image-to-image</h3>
+        <p>Full prompt + negative-prompt control, batch generation, seeds, and saved presets you can
+          recall in one click.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-shield.html %}</div>
+        <h3>Keep a face across generations</h3>
+        <p>PhotoMaker-based identity lock: give it a reference photo and generate new scenes of that
+          same person - without a training run.</p>
+        <p class="card-warn">{% include icon-warning.html %} Apply only to your own photos.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-arrow.html %}</div>
+        <h3>Instruction-based image editing</h3>
+        <p>FLUX Kontext &amp; klein editing: describe the change ("put them on a beach") and it edits the
+          photo while keeping everything else - composition, identity included.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-layers.html %}</div>
+        <h3>A real gallery</h3>
+        <p>Every generation is auto-saved with its full parameters embedded in the PNG - prompt, seed,
+          steps, CFG, sampler, model - browsable with instant thumbnails.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">{% include icon-check.html %}</div>
+        <h3>Runs on your GPU, your rules</h3>
+        <p>No account, no cloud queue, no telemetry - generations never leave your machine.
+          Gentastic auto-detects CUDA or Vulkan and picks the fastest backend you actually have.</p>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top: 40px;">
+      <a class="btn btn-ghost" href="{{ '/features/' | relative_url }}">See the full feature list {% include icon-arrow.html %}</a>
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head center reveal">
+      <p class="eyebrow">Under the hood</p>
+      <h2>Built for real GPUs, not just demos</h2>
+      <p>Gentastic runs on <a href="https://github.com/leejet/stable-diffusion.cpp" target="_blank" rel="noopener" style="color:var(--accent-bright); text-decoration:underline;">stable-diffusion.cpp</a>
+        via GGUF quantized models - small downloads, real performance.</p>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-card reveal">
+        <span class="tag tag-ready">Ready today</span>
+        <h3>NVIDIA CUDA</h3>
+        <p>GTX 10-series through RTX 50-series. Don't have the CUDA Toolkit? Gentastic can fetch a
+          ~570&nbsp;MB on-demand CUDA runtime for you - no separate install.</p>
+      </div>
+      <div class="tech-card reveal">
+        <span class="tag tag-ready">Ready today</span>
+        <h3>Vulkan</h3>
+        <p>The stable, fast path on AMD GPUs - including unified-memory APUs like the Ryzen AI Max
+          "Strix Halo" / Radeon 8060S. No ROCm install, no Python.</p>
+      </div>
+      <div class="tech-card reveal">
+        <span class="tag tag-soon">Coming</span>
+        <h3>AMD ROCm</h3>
+        <p>Vulkan already covers AMD GPUs today. Native ROCm 7 acceleration is being integrated
+          next, as the upstream StableDiffusion.NET ROCm backend matures and gets validated on
+          real AMD hardware.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head center reveal">
+      <p class="eyebrow">Made with Gentastic</p>
+      <h2>Real output, not stock photos</h2>
+      <p>Every image below was generated locally by the app you can download - unedited, straight
+        out of the Gallery.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <div class="gallery-item reveal" data-full="{{ '/assets/img/examples/fox.jpg' | relative_url }}" data-alt="A red fox curled up in autumn leaves" data-caption="&ldquo;a red fox curled up in golden autumn leaves, soft morning light&rdquo; - FLUX.2 klein 4B, 4 steps">
+        <img src="{{ '/assets/img/examples/fox.jpg' | relative_url }}" alt="A red fox curled up in golden autumn leaves" loading="lazy" />
+        <div class="gallery-caption">Red fox &middot; FLUX.2 klein 4B</div>
+      </div>
+      <div class="gallery-item reveal" data-full="{{ '/assets/img/examples/owl.jpg' | relative_url }}" data-alt="A snowy owl on a frosted branch at dusk" data-caption="&ldquo;a snowy owl perched on a frost-covered branch at dusk&rdquo; - FLUX.2 klein 4B, 4 steps">
+        <img src="{{ '/assets/img/examples/owl.jpg' | relative_url }}" alt="A snowy owl on a frosted branch at dusk" loading="lazy" />
+        <div class="gallery-caption">Snowy owl &middot; FLUX.2 klein 4B</div>
+      </div>
+      <div class="gallery-item reveal" data-full="{{ '/assets/img/examples/hummingbird.jpg' | relative_url }}" data-alt="A hummingbird hovering by a red flower" data-caption="&ldquo;a hummingbird hovering beside a vivid red flower&rdquo; - FLUX.2 klein 4B, 4 steps">
+        <img src="{{ '/assets/img/examples/hummingbird.jpg' | relative_url }}" alt="A hummingbird hovering by a red flower" loading="lazy" />
+        <div class="gallery-caption">Hummingbird &middot; FLUX.2 klein 4B</div>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top: 32px;">
+      <a class="btn btn-ghost" href="{{ '/examples/' | relative_url }}">See the full gallery {% include icon-arrow.html %}</a>
+    </p>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container reveal">
+    <h2>Your GPU is already fast enough.</h2>
+    <p>Unzip and launch in under a minute. Pick a model - the first download takes a little
+      longer, depending on your connection - then generate. That's the whole setup.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary btn-lg" href="{{ '/download/' | relative_url }}">
+        {% include icon-download.html %} Download for Windows
+      </a>
+      <a class="btn btn-ghost btn-lg" href="{{ site.repo }}" target="_blank" rel="noopener">
+        {% include icon-github.html %} View source on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged example image">
+  <button class="lightbox-close" aria-label="Close"> {% include icon-close.html %} </button>
+  <img src="" alt="" />
+  <p class="lightbox-caption"></p>
+</div>

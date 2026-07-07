@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gentastic.Core\Gentastic.Core.csproj" />
+    <ProjectReference Include="..\Gentastic.Engine\Gentastic.Engine.csproj" />
+    <ProjectReference Include="..\Gentastic.Hardware\Gentastic.Hardware.csproj" />
+    <ProjectReference Include="..\Gentastic.Models\Gentastic.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
+    <PackageReference Include="StableDiffusion.NET.Backend.Cpu" Version="7.0.0" />
+    <PackageReference Include="StableDiffusion.NET.Backend.Vulkan" Version="7.0.0" />
+    <!-- NVIDIA CUDA 12 backend. The shipped/portable build always bundles it for a universal download
+         (publish-portable.ps1 sets -p:IncludeCuda=true) - supports GTX 10-series through RTX 50-series
+         (compute 6.1/7.5/8.6/8.9/10.0, so RTX 20-series like the 2070 works). It's gated behind
+         IncludeCuda only so normal dev/CI builds don't restore the ~200 MB native they never use. The
+         runtime detector auto-selects it (native folder "cuda12") on an NVIDIA GPU + CUDA 12 toolkit. -->
+    <PackageReference Include="StableDiffusion.NET.Backend.Cuda12.Windows" Version="7.0.0"
+                      Condition="'$(IncludeCuda)' == 'true'" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Embed the icon as WPF resources so windows can load it at runtime (taskbar / title bar) and the
+         sidebar can show the cropped mascot. icon.ico is generated from assets/icon-app.png. -->
+    <Resource Include="..\..\assets\icon.ico" Link="Assets\icon.ico" />
+    <Resource Include="..\..\assets\icon-app.png" Link="Assets\icon-app.png" />
+    <!-- IDCT company logo, shown on the About page (on a white card). -->
+    <Resource Include="..\..\assets\idct-logo.png" Link="Assets\idct-logo.png" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <Version>0.1.0</Version>
+    <!-- App/exe icon (embedded into the apphost). Generated from assets/icon.png as a multi-res .ico. -->
+    <ApplicationIcon>..\..\assets\icon.ico</ApplicationIcon>
+    <!-- The StableDiffusion.NET CPU backend ships stable-diffusion.dll in several AVX subfolders;
+         they land in distinct runtime paths, so allow the "duplicate" during self-contained publish. -->
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+</Project>

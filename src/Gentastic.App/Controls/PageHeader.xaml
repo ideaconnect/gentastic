@@ -1,0 +1,26 @@
+<UserControl x:Class="Gentastic.App.Controls.PageHeader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp">
+    <StackPanel>
+        <Grid Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <fa:IconBlock FontSize="19" Margin="0,0,12,0" VerticalAlignment="Center"
+                              Foreground="{DynamicResource AccentBrush}"
+                              Icon="{Binding Icon, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <TextBlock FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            </StackPanel>
+            <ContentPresenter Grid.Column="1" VerticalAlignment="Center"
+                              Content="{Binding Actions, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+        </Grid>
+        <!-- horizontal rule under the title -->
+        <Border Height="1" Margin="0,12,0,18" Opacity="0.55"
+                Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+    </StackPanel>
+</UserControl>

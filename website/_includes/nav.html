@@ -1,0 +1,42 @@
+<header class="nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="{{ '/' | relative_url }}">
+      <img src="{{ '/assets/img/brand/logo.png' | relative_url }}" alt="" width="44" height="44" class="brand-mark" />
+      <span>Gentastic</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      {% for item in site.nav %}
+      <a href="{{ item.url | relative_url }}"
+         class="{% if page.url == item.url %}is-active{% endif %}">{{ item.title }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="nav-actions">
+      <a class="icon-link" href="{{ site.repo }}" target="_blank" rel="noopener" aria-label="GitHub repository" title="GitHub">
+        {% include icon-github.html %}
+      </a>
+      <a class="icon-link sponsor" href="{{ site.sponsors }}" target="_blank" rel="noopener" aria-label="Sponsor on GitHub" title="Sponsor on GitHub">
+        {% include icon-sponsor.html %}
+      </a>
+      <a class="icon-link coffee" href="{{ site.coffee }}" target="_blank" rel="noopener" aria-label="Buy me a coffee" title="Buy me a coffee">
+        {% include icon-coffee.html %}
+      </a>
+      <a class="btn btn-primary btn-sm" href="{{ '/download/' | relative_url }}" aria-label="Download">
+        {% include icon-download.html %} <span>Download</span>
+      </a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        {% include icon-menu.html %}
+      </button>
+    </div>
+  </div>
+
+  <nav class="nav-mobile" id="nav-mobile" aria-label="Mobile">
+    {% for item in site.nav %}
+    <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+    {% endfor %}
+    <a href="{{ site.repo }}" target="_blank" rel="noopener">GitHub</a>
+    <a href="{{ site.sponsors }}" target="_blank" rel="noopener">Sponsor on GitHub</a>
+    <a href="{{ site.coffee }}" target="_blank" rel="noopener">Buy me a coffee</a>
+  </nav>
+</header>

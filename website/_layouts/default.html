@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% include head-meta.html %}
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body class="{{ page.body_class }}">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {% include nav.html %}
+
+  <main id="main">
+    {{ content }}
+  </main>
+
+  {% include footer.html %}
+
+  <script src="{{ '/assets/js/site.js' | relative_url }}" defer></script>
+</body>
+</html>

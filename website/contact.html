@@ -1,0 +1,58 @@
+---
+layout: default
+title: Contact
+description: >-
+  Get in touch about Gentastic - questions, bug reports, feature ideas, or support. Send a
+  message straight to the developer's inbox, or reach the project on GitHub.
+permalink: /contact/
+---
+
+<section style="padding-top: 56px; padding-bottom: 64px;">
+  <div class="container container-narrow">
+    <div class="section-head reveal">
+      <p class="eyebrow">Contact</p>
+      <h1>Get in touch</h1>
+      <p>Questions, a bug to report, a feature idea, or just want to say hi? Send a message below
+        and it goes straight to my inbox. Prefer email?
+        <a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a>.</p>
+    </div>
+
+    <form class="contact-form reveal" action="https://api.web3forms.com/submit" method="POST">
+      <input type="hidden" name="access_key" value="75a3e224-4f05-4bae-8956-4f8b7e82c620" />
+      <input type="hidden" name="subject" value="New message from the Gentastic website" />
+      <input type="hidden" name="from_name" value="Gentastic website" />
+      <input type="hidden" name="redirect" value="{{ '/contact/thank-you/' | absolute_url }}" />
+      <!-- Honeypot: bots fill this hidden field; real visitors never see it, so a checked
+           value tells Web3Forms to silently drop the submission. -->
+      <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" />
+
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" placeholder="Your name" autocomplete="name" required />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea name="message" id="message" rows="6" placeholder="What's on your mind?" required></textarea>
+      </div>
+
+      <div class="h-captcha" data-sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2"></div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Send message</button>
+    </form>
+
+    <p class="contact-alt reveal">
+      You can also reach the project on
+      <a href="{{ site.repo }}" target="_blank" rel="noopener">GitHub</a> -
+      <a href="{{ site.issues }}" target="_blank" rel="noopener">open an issue</a>
+      for bugs and feature requests.
+    </p>
+  </div>
+</section>
+
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
