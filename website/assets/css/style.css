@@ -978,6 +978,11 @@ section {
 }
 .shot-card img {
   width: 100%;
+  /* Screenshots carry width/height attributes (1180x780) as presentation hints.
+     .shot-card only overrides width, so without height:auto the 780px height hint
+     sticks and the landscape shot gets stretched into a portrait box. */
+  height: auto;
+  aspect-ratio: 1180 / 780;
   border-bottom: 1px solid var(--border);
 }
 .shot-card-body {
